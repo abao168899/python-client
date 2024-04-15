@@ -1,26 +1,27 @@
 from seven_api.classes.Endpoint import Endpoint
-from seven_api.classes.Lookup import LookupType
-from seven_api.classes.Method import Method
 from seven_api.resources.Resource import Resource
 
 
 class LookupResource(Resource):
-    def cnam(self, params=None):
-        return self.__post(LookupType.CNAM, params)
+    def cnam(self, number: str) -> list:
+        return self.__post('cnam', number)
 
-    def hlr(self, params=None):
-        return self.__post(LookupType.HLR, params)
+    def hlr(self, params=None) -> list:
+        return self.__post('hlr', params)
 
-    def mnp(self, params=None):
-        return self.__post(LookupType.MNP, params)
+    def mnp(self, params=None) -> list:
+        return self.__post('mnp', params)
 
-    def format(self, params=None):
-        return self.__post(LookupType.FORMAT, params)
+    def format(self, params=None) -> list:
+        return self.__post('format', params)
 
-    def __post(self, type: LookupType, number: str):
-        params = {
-            'json': True,
-            'number': number,
-            'type': type,
-        }
-        return self._client.request(Method.GET, Endpoint.LOOKUP, params).json()
+    def rcs(self, params=None) -> list:
+        return self.__post('rcs', params)
+
+    def __post(self, lookup_type: str, number: str) -> list:
+        res = self._client.get('{}/{}?number={}'.format(Endpoint.LOOKUP.value, lookup_type, number))
+        
+        if isinstance(res, dict):
+            return [res]
+        return res
+
