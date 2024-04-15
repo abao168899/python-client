@@ -1,7 +1,14 @@
+from enum import Enum
+from json import JSONDecodeError
+
 import requests
 
 from seven_api.classes.Endpoint import Endpoint
 from seven_api.classes.Method import Method
+
+class OrderDirection(str, Enum):
+    Ascending = "asc"
+    Descending = "desc"
 
 
 class SevenApi:
@@ -12,12 +19,21 @@ class SevenApi:
     def __init__(self, api_key: str, sent_with: str = 'Python'):
         self.apiKey = api_key
         self.sentWith = sent_with
+        self.headers = {
+            'Accept': 'application/json',
+            'SentWith': self.sentWith,
+            'X-Api-Key': self.apiKey
+        }
+        self.kwargs = {'headers': self.headers}
 
     def delete(self, endpoint: Endpoint | str, params=None):
         return self.request(Method.DELETE, endpoint, params)
 
     def get(self, endpoint: Endpoint | str, params=None):
         return self.request(Method.GET, endpoint, params)
+
+    def patch(self, endpoint: Endpoint | str, params=None):
+        return self.request(Method.PATCH, endpoint, params)
 
     def post(self, endpoint: Endpoint | str, params=None):
         return self.request(Method.POST, endpoint, params)
@@ -37,25 +53,21 @@ class SevenApi:
                 else:
                     params.pop(key)
 
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'SentWith': self.sentWith,
-            'X-Api-Key': self.apiKey
-        }
-        kwargs = {'headers': headers}
         if method is Method.GET:
-            kwargs['params'] = params
+            self.kwargs['params'] = params
         else:
-            kwargs['json'] = params
+            self.kwargs['data'] = params
         url = '{}/{}'.format(self.baseUrl, endpoint)
-        res = requests.request(method, url, **kwargs)
-        json = res.json()
+        res = requests.request(method, url, **self.kwargs)
 
-        # if res.status_code != 200 or not isinstance(json, dict) or not isinstance(json, list):
-        #     raise ValueError('{} {} -> {}'.format(method, url, json))
+        try:
+            json = res.json()
+        except requests.exceptions.JSONDecodeError:
+            json = res.text
 
         if res.status_code != 200:
             raise ValueError('{} {} -> {}'.format(method, url, json))
+        # if res.status_code != 200 or not isinstance(json, dict) or not isinstance(json, list):
+        #     raise ValueError('{} {} -> {}'.format(method, url, json))
 
         return json

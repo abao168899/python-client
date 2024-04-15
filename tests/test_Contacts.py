@@ -1,48 +1,62 @@
-from seven_api.classes.Contacts import ContactsAction, ContactsResponse
+from seven_api.resources.ContactsResource import ContactsResource, ContactsListParams
 from tests.BaseTest import BaseTest
 
 
 class TestContacts(BaseTest):
-    def test_contacts_del(self) -> None:
-        action = ContactsAction.DELETE
-        params = {'id': 123456}
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.resource = ContactsResource(self.client)
 
-        # CSV
-        res = self.client.contacts(action, params)
-        self.assertEqual(int(res), ContactsResponse.CSV.value)
+    def test_contacts_delete(self) -> None:
+        res_create = self.resource.create({})
+        contact_id = res_create['id']
 
-        # JSON
-        res = self.client.contacts(action, {**params, 'json': True})
-        self.assertIsInstance(res, int)
-        self.assertEqual(res, params['id'])
+        try:
+            self.resource.delete(contact_id)
+        except ValueError:
+            self.fail("delete() raised ValueError unexpectedly!")
+
+    def assert_contact(self, contact: dict) -> None:
+        self.assertIsNotNone(contact['id'])
 
     def test_contacts_read(self) -> None:
-        action = ContactsAction.READ
+        res_create = self.resource.create({})
 
-        # CSV
-        res = self.client.contacts(action)
-        if len(res):
-            self.assertTrue(BaseTest.is_valid_delimiter(res))
-        else:
-            self.assertEqual(res, '')
+        res = self.resource.list(ContactsListParams())
+        self.assertIn('count', res['pagingMetadata'])
+        self.assertIn('has_more', res['pagingMetadata'])
+        self.assertIn('limit', res['pagingMetadata'])
+        self.assertIn('offset', res['pagingMetadata'])
+        self.assertIn('total', res['pagingMetadata'])
 
-        # JSON
-        self.assertIsInstance(self.client.contacts(action, {'json': True}), list)
+        for contact in res['data']:
+            self.assert_contact(contact)
 
-    def test_contacts_write(self) -> None:
-        action = ContactsAction.WRITE
+        self.resource.delete(res_create['id'])
+
+    def test_contacts_create(self) -> None:
+        avatar = 'https://avatars.githubusercontent.com/u/25985637'
         params = {
             'email': 'wh@tev.er',
-            'empfaenger': '+491716992343',
-            'nick': 'Tom Tester',
+            'firstname': 'Tom',
+            'lastname': 'Tester',
+            'mobile_number': '491716992343',
         }
+        res = self.resource.create(params, avatar)
 
-        # CREATE
-        res = self.client.contacts(action, params)
-        code, contact = res.splitlines()
-        self.assertEqual(int(code), ContactsResponse.JSON.value)
+        self.assertEqual(avatar, res['avatar'])
+        self.assertEqual(params['email'], res['properties']['email'])
+        self.assertEqual(params['firstname'], res['properties']['firstname'])
+        self.assertEqual(params['lastname'], res['properties']['lastname'])
+        self.assertEqual(params['mobile_number'], res['properties']['mobile_number'])
 
-        # EDIT
-        contact = int(contact)
-        res = self.client.contacts(action, {**params, id: contact})
-        self.assertEqual(int(res.splitlines()[0]), ContactsResponse.JSON.value)
+        self.resource.delete(res['id'])
+
+    def test_contacts_get(self) -> None:
+        create_res = self.resource.create({})
+
+        contact = self.resource.get(create_res['id'])
+        self.assertEqual(contact['id'], str(create_res['id']))
+        self.assert_contact(contact)
+
+        self.resource.delete(create_res['id'])
