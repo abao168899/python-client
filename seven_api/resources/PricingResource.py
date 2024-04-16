@@ -1,8 +1,10 @@
 from seven_api.classes.Endpoint import Endpoint
-from seven_api.classes.Method import Method
 from seven_api.resources.Resource import Resource
 
 
 class PricingResource(Resource):
-    def retrieve(self, country: str = None) -> dict:
-        return self._client.request(Method.GET, Endpoint.PRICING, {'country': country}).json()
+    def get(self, country_code: str = "") -> dict:
+        path = f'{Endpoint.PRICING.value}'
+        if len(country_code) > 0:
+            path = f'{path}?country={country_code}'
+        return self._client.get(path)
