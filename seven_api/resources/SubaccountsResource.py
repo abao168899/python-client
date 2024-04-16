@@ -1,25 +1,42 @@
 from seven_api.classes.Endpoint import Endpoint
-from seven_api.classes.Method import Method
-from seven_api.classes.Subaccounts import SubaccountsAction
 from seven_api.resources.Resource import Resource
 
 
 class SubaccountsResource(Resource):
-    def read(self) -> list:
-        return self._client.request(Method.GET, Endpoint.SUBACCOUNTS, {'action': SubaccountsAction.READ}).json()
+    def auto_charge(self, subaccount_id: int, amount: float, threshold: float) -> dict:
+        params = {
+            'action': 'update',
+            'amount': amount,
+            'id': subaccount_id,
+            'threshold': threshold
+        }
+        return self._client.post(Endpoint.SUBACCOUNTS, params)
 
-    def create(self, params: dict) -> dict:
-        params['action'] = SubaccountsAction.CREATE
-        return self._client.request(Method.POST, Endpoint.SUBACCOUNTS, params).json()
+    def create(self, email: str, name: str) -> dict:
+        params = {
+            'action': 'create',
+            'email': email,
+            'name': name,
+        }
+        return self._client.post(Endpoint.SUBACCOUNTS, params)
 
-    def auto_charge(self, params: dict) -> dict:
-        params['action'] = SubaccountsAction.UPDATE
-        return self._client.request(Method.POST, Endpoint.SUBACCOUNTS, params).json()
+    def delete(self, subaccount_id: int) -> dict:
+        params = {
+            'action': 'delete',
+            'id': subaccount_id,
+        }
+        return self._client.post(Endpoint.SUBACCOUNTS, params)
 
-    def transfer_credits(self, params: dict) -> dict:
-        params['action'] = SubaccountsAction.TRANSFER_CREDITS
-        return self._client.request(Method.POST, Endpoint.SUBACCOUNTS, params).json()
+    def list(self, subaccount_id: int = None) -> list:
+        path = f'{Endpoint.SUBACCOUNTS.value}?action=read'
+        if subaccount_id is not None:
+            path += f'&id={subaccount_id}'
+        return self._client.get(path)
 
-    def delete(self, params: dict) -> dict:
-        params['action'] = SubaccountsAction.DELETE
-        return self._client.request(Method.POST, Endpoint.SUBACCOUNTS, params).json()
+    def transfer_credits(self, subaccount_id: int, amount: float) -> dict:
+        params = {
+            'action': 'transfer_credits',
+            'amount': amount,
+            'id': subaccount_id,
+        }
+        return self._client.post(Endpoint.SUBACCOUNTS, params)

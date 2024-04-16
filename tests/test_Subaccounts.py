@@ -1,149 +1,82 @@
 import time
 
-from seven_api.classes.Subaccounts import SubaccountsAction
+from seven_api.resources.SubaccountsResource import SubaccountsResource
 from tests.BaseTest import BaseTest
 
 
 class TestSubaccounts(BaseTest):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.resource = SubaccountsResource(self.client)
+
     def test_subaccounts_create_fail(self) -> None:
-        action = SubaccountsAction.CREATE
-        params = {
-            'email': '',  # invalid email
-            'name': '',  # invalid name
-        }
+        res = self.resource.create('', '')
 
-        res = self.client.subaccounts(action, params)
-
-        self.assertIsInstance(res, dict)
-
-        self.assertIn('error', res)
         self.assertIsInstance(res['error'], str)
-
-        self.assertIn('success', res)
+        self.assertNotIn('subaccount', res)
         self.assertFalse(res['success'])
 
-        self.assertNotIn('subaccount', res)
-
     def test_subaccounts_create_success(self) -> None:
-        action = SubaccountsAction.CREATE
         timestamp = int(time.time())
-        params = {
-            'email': 'tom.test{}@seven.io'.format(timestamp),
-            'name': 'Tom Test {}'.format(timestamp),
-        }
-
-        res = self.client.subaccounts(action, params)
-
-        self.assertIsInstance(res, dict)
+        email = f'tom.test.{timestamp}@seven.io'
+        name = f'Tom Test {timestamp}'
+        res = self.resource.create(email, name)
 
         self.assertIn('error', res)
         self.assertIsNone(res['error'])
-
-        self.assertIn('success', res)
+        self.__assertSubaccount(res['subaccount'])
         self.assertTrue(res['success'])
 
-        self.assertIn('subaccount', res)
-        self.__assertSubaccount(res['subaccount'])
+        self.resource.delete(res['subaccount']['id'])
 
     def test_subaccounts_delete_fail(self) -> None:
-        action = SubaccountsAction.DELETE
-        params = {
-            'id': 123456  # invalid ID
-        }
-
-        res = self.client.subaccounts(action, {**params})
-        self.assertIsInstance(res, dict)
+        res = self.resource.delete(123456)
         self.assertFalse(res['success'])
-        self.assertIsInstance(res['error'], str)
+        self.assertEqual('Subaccount not found', res['error'])
 
-    def test_subaccounts_read(self) -> None:
-        action = SubaccountsAction.READ
+    def test_subaccounts_list(self) -> None:
+        timestamp = int(time.time())
+        email = f'tom.test.{timestamp}@seven.io'
+        name = f'Tom Test {timestamp}'
+        created = self.resource.create(email, name)
 
-        res = self.client.subaccounts(action, {})
-        self.assertIsInstance(res, list)
+        for subaccount in self.resource.list():
+            self.__assertSubaccount(subaccount)
 
-        for subaccount in res:
-            self.assertIn('auto_topup', subaccount)
-            self.assertIsInstance(subaccount['auto_topup'], dict)
+        self.resource.delete(created['subaccount']['id'])
 
-            self.assertIn('amount', subaccount['auto_topup'])
-            self.assertTrue(subaccount['auto_topup']['amount'] is None
-                            or isinstance(subaccount['auto_topup']['amount'], int))
-
-            self.assertIn('threshold', subaccount['auto_topup'])
-            self.assertTrue(subaccount['auto_topup']['threshold'] is None
-                            or isinstance(subaccount['auto_topup']['threshold'], int))
-
-            self.assertIn('balance', subaccount)
-            self.assertTrue(subaccount['balance'] is None or isinstance(subaccount['balance'], int))
-
-            self.assertIn('company', subaccount)
-            self.assertIsInstance(subaccount['company'], str)
-
-            self.assertIn('contact', subaccount)
-            self.assertIsInstance(subaccount['contact'], dict)
-            self.assertIsInstance(subaccount['contact']['email'], str)
-            self.assertIsInstance(subaccount['contact']['name'], str)
-
-            self.assertIn('id', subaccount)
-            self.assertIsInstance(subaccount['id'], int)
-
-            self.assertIn('total_usage', subaccount)
-            self.assertIsInstance(subaccount['total_usage'], int)
-
-            self.assertIn('username', subaccount)
-            self.assertTrue(subaccount['username'] is None or isinstance(subaccount['username'], str))
+    def test_subaccounts_list_with_id__empty(self) -> None:
+        res = self.resource.list(0)
+        self.assertEqual(len(res), 0)
 
     def test_subaccounts_transfer_credits_fail(self) -> None:
-        action = SubaccountsAction.TRANSFER_CREDITS
-        params = {
-            'amount': 0,  # invalid amount
-            'id': '0',  # invalid id
-        }
-
-        res = self.client.subaccounts(action, params)
+        res = self.resource.transfer_credits(0, 0.0)
         self.assertFalse(res['success'])
-        self.assertIsInstance(res['error'], str)
+        self.assertEqual('Invalid amount', res['error'])
 
     def test_subaccounts_update_fail(self) -> None:
-        action = SubaccountsAction.UPDATE
-        params = {
-            'amount': 0,  # invalid amount
-            'id': '0',  # invalid id
-            'threshold': -1,  # invalid threshold
-        }
-
-        res = self.client.subaccounts(action, params)
+        res = self.resource.auto_charge(0, 0.0, 0.0)
         self.assertFalse(res['success'])
-        self.assertIsInstance(res['error'], str)
+        self.assertEqual('Subaccount not found', res['error'])
 
     def __assertSubaccount(self, subaccount):
-        self.assertIn('auto_topup', subaccount)
-        self.assertIsInstance(subaccount['auto_topup'], dict)
+        auto_topup = subaccount['auto_topup']
 
-        self.assertIn('amount', subaccount['auto_topup'])
-        self.assertTrue(subaccount['auto_topup']['amount'] is None
-                        or isinstance(subaccount['auto_topup']['amount'], int))
+        self.assertIn('amount', auto_topup)
+        self.assertTrue(isinstance(auto_topup['amount'], (float, type(None))))
 
-        self.assertIn('threshold', subaccount['auto_topup'])
-        self.assertTrue(subaccount['auto_topup']['threshold'] is None
-                        or isinstance(subaccount['auto_topup']['threshold'], int))
+        self.assertIn('threshold', auto_topup)
+        self.assertTrue(isinstance(auto_topup['threshold'], (float, int, type(None))))
 
         self.assertIn('balance', subaccount)
-        self.assertIsInstance(subaccount['balance'], int)
+        self.assertTrue(isinstance(subaccount['balance'], (float, int)))
 
         self.assertIn('company', subaccount)
-        self.assertTrue(subaccount['company'] is None
-                        or isinstance(subaccount['company'], str))
+        self.assertIsInstance(subaccount['company'], str)
 
-        self.assertIn('contact', subaccount)
-        self.assertIsInstance(subaccount['contact'], dict)
-
-        self.assertIn('email', subaccount['contact'])
-        self.assertIsInstance(subaccount['contact']['email'], str)
-
-        self.assertIn('name', subaccount['contact'])
-        self.assertIsInstance(subaccount['contact']['name'], str)
+        contact = subaccount['contact']
+        self.assertIsInstance(contact['email'], str)
+        self.assertIsInstance(contact['name'], str)
 
         self.assertIn('id', subaccount)
         self.assertIsInstance(subaccount['id'], int)
@@ -152,5 +85,4 @@ class TestSubaccounts(BaseTest):
         self.assertIsInstance(subaccount['total_usage'], int)
 
         self.assertIn('username', subaccount)
-        self.assertTrue(subaccount['username'] is None
-                        or isinstance(subaccount['username'], str))
+        self.assertTrue(isinstance(subaccount['username'], (str, type(None))))
