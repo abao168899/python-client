@@ -1,4 +1,5 @@
 from seven_api.classes.Endpoint import Endpoint
+from seven_api.classes.ExtendedEnum import ExtendedEnum
 from seven_api.resources.Resource import Resource
 
 
@@ -18,6 +19,20 @@ class SmsResource(Resource):
         params['to'] = to
         return self._client.post(Endpoint.SMS, params)
 
-    def status(self, ids: list) -> list:
-        msg_ids = ','.join(ids)
-        return self._client.get(f'{Endpoint.STATUS.value}?msg_id={msg_ids}')
+    def status(self, ids: list | str) -> list:
+        if isinstance(ids, str):
+            ids = [ids]
+        ids = ','.join(ids)
+        return self._client.get(f'{Endpoint.STATUS.value}?msg_id={ids}')
+
+
+class StatusMessage(ExtendedEnum):
+    DELIVERED = 0
+    NOTDELIVERED = 1
+    BUFFERED = 2
+    TRANSMITTED = 3
+    ACCEPTED = 4
+    EXPIRED = 5
+    REJECTED = 6
+    FAILED = 7
+    UNKNOWN = 8

@@ -1,4 +1,5 @@
-from seven_api.resources.SmsResource import SmsResource
+from seven_api.resources.JournalResource import JournalResource
+from seven_api.resources.SmsResource import SmsResource, StatusMessage
 from tests.BaseTest import BaseTest
 
 
@@ -6,6 +7,17 @@ class TestSms(BaseTest):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.resource = SmsResource(self.client)
+
+    def test_status(self) -> None:
+        entries = self.resource.status(JournalResource(self.client).outbound()[0]['id'])
+        self.assertEqual(1, len(entries))
+        entry = entries[0]
+
+        if entry['status'] is None:
+            self.assertIsNone(entry['status_time'])
+        else:
+            self.assertIn(entry['status'], StatusMessage.names())
+            self.assertTrue(BaseTest.is_valid_datetime(entry['status_time'], "%Y-%m-%d %H:%M:%S.%f"))
 
     def test_sms_dispatch__simple(self) -> None:
         to = '491716992343'
