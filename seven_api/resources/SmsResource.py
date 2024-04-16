@@ -9,7 +9,9 @@ class SmsResource(Resource):
         ids = ','.join(ids)
         return self._client.delete(f'{Endpoint.SMS.value}?ids[]={ids}')
 
-    def dispatch(self, to: list | str, text: str, params: dict) -> dict:
+    def dispatch(self, to: list | str, text: str, params: dict = None) -> dict:
+        if params is None:
+            params = {}
         params['text'] = text
         if isinstance(to, list):
             to = ','.join(to)
