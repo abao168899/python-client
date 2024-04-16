@@ -16,24 +16,28 @@ class TestGroups(BaseTest):
         except ValueError:
             self.fail("delete() raised ValueError unexpectedly!")
 
-    def assert_group(self, group: dict) -> None:
+    def __assert_group(self, group: dict) -> None:
         self.assertIsNotNone(group['created'])
         self.assertIsNotNone(group['id'])
         self.assertIsNotNone(group['members_count'])
         self.assertIsNotNone(group['name'])
 
-    def test_groups_read(self) -> None:
+    def test_groups_list(self) -> None:
         res_create = self.resource.create("Group Name")
 
-        res = self.resource.list(GroupsListParams())
-        self.assertIn('count', res['pagingMetadata'])
-        self.assertIn('has_more', res['pagingMetadata'])
-        self.assertIn('limit', res['pagingMetadata'])
-        self.assertIn('offset', res['pagingMetadata'])
-        self.assertIn('total', res['pagingMetadata'])
+        params = GroupsListParams()
+        params.limit = 500
+        res = self.resource.list(params)
+        paging_metadata = res['pagingMetadata']
+        self.assertIn('count', paging_metadata)
+        self.assertIn('has_more', paging_metadata)
+        self.assertIn('limit', paging_metadata)
+        self.assertEqual(params.limit, paging_metadata['limit'])
+        self.assertIn('offset', paging_metadata)
+        self.assertIn('total', paging_metadata)
 
         for group in res['data']:
-            self.assert_group(group)
+            self.__assert_group(group)
 
         self.resource.delete(res_create['id'])
 
@@ -53,6 +57,6 @@ class TestGroups(BaseTest):
         group = self.resource.get(create_res['id'])
         self.assertEqual(group['id'], create_res['id'])
         self.assertEqual(name, group['name'])
-        self.assert_group(group)
+        self.__assert_group(group)
 
         self.resource.delete(create_res['id'])

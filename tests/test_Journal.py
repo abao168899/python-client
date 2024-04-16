@@ -1,4 +1,4 @@
-from seven_api.resources.JournalResource import JournalResource
+from seven_api.resources.JournalResource import JournalResource, JournalParams
 from tests.BaseTest import BaseTest
 
 
@@ -12,7 +12,14 @@ class TestJournal(BaseTest):
             self.__assert_common(entry)
 
     def test_outbound(self) -> None:
-        for entry in self.resource.outbound():
+        params = JournalParams()
+        params.limit = 500
+        params.date_from = ""
+        params.date_to = ""
+        params.state = ""
+        params.to = ""
+
+        for entry in self.resource.outbound(params):
             self.__assert_common(entry)
 
             self.assertIn('channel', entry)

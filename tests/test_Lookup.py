@@ -7,17 +7,43 @@ class TestLookup(BaseTest):
         super().__init__(*args, **kwargs)
         self.resource = LookupResource(self.client)
 
+    def __assertCnam(self, cnam: dict):
+        self.assertIsInstance(cnam['code'], str)
+        self.assertIsInstance(cnam['name'], str)
+        self.assertIsInstance(cnam['number'], str)
+        self.assertIsInstance(cnam['success'], str)
+
     def test_lookup_cnam(self) -> None:
-        for lookup in self.resource.cnam('+491716992343'):
-            self.assertIsInstance(lookup, dict)
-            self.assertIsInstance(lookup['success'], str)
-            self.assertIsInstance(lookup['code'], str)
-            self.assertIsInstance(lookup['number'], str)
-            self.assertIsInstance(lookup['name'], str)
+        res = self.resource.cnam('+491716992343')
+        self.assertEqual(1, len(res))
+
+        for lookup in res:
+            self.__assertCnam(lookup)
+
+    def test_lookup_cnam__multi(self) -> None:
+        numbers = ['491716992343', '491799999999']
+        res = self.resource.cnam(numbers)
+        self.assertEqual(len(numbers), len(res))
+
+        for lookup in res:
+            self.assertIn(lookup['number'], numbers)
+            self.__assertCnam(lookup)
 
     def test_lookup_format(self) -> None:
-        for lookup in self.resource.format('+491716992343'):
-            self.assert_format(lookup)
+        res = self.resource.format('+491716992343')
+        self.assertEqual(1, len(res))
+
+        for lookup in res:
+            self.__assertFormat(lookup)
+
+    def test_lookup_format__multi(self) -> None:
+        numbers = ['+491716992343', '+491799999999']
+        res = self.resource.format(numbers)
+        self.assertEqual(len(numbers), len(res))
+
+        for lookup in res:
+            self.assertIn(lookup['international'], numbers)
+            self.__assertFormat(lookup)
 
     def test_lookup_hlr(self) -> None:
         def is_valid_carrier(carrier: dict):
@@ -71,9 +97,9 @@ class TestLookup(BaseTest):
     def test_lookup_rcs(self) -> None:
         for lookup in self.resource.rcs('+491716992343'):
             self.assertIsInstance(lookup['rcs_capabilities'], list)
-            self.assert_format(lookup)
+            self.__assertFormat(lookup)
 
-    def assert_format(self, res: dict) -> None:
+    def __assertFormat(self, res: dict) -> None:
         self.assertTrue(res['success'])
         self.assertIsInstance(res['national'], str)
         self.assertIsInstance(res['international'], str)

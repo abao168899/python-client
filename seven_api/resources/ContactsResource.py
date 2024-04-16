@@ -28,7 +28,7 @@ class ContactsListParams:
 
 
 class ContactsResource(Resource):
-    def create(self, properties: dict, avatar=None, groups=None) -> dict:
+    def create(self, properties: dict, avatar: str = None, groups: list = None) -> dict:
         if groups is None:
             groups = []
 
@@ -43,8 +43,10 @@ class ContactsResource(Resource):
     def get(self, contact_id: int) -> dict:
         return self._client.get(f'{Endpoint.CONTACTS.value}/{contact_id}')
 
-    def list(self, params: ContactsListParams) -> dict:
-        return self._client.get(f'{Endpoint.CONTACTS.value}?{params.as_qs()}')
+    def list(self, params: ContactsListParams = None) -> dict:
+        if params is None:
+            params = ContactsListParams()
+        return self._client.get(Endpoint.CONTACTS, params.as_dict())
 
     def update(self, params: dict) -> dict:
         contact_id = params['id']

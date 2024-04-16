@@ -33,12 +33,15 @@ class SevenApi:
             'X-Api-Key': self.apiKey
         }
         self.kwargs = {'headers': self.headers}
+        self.req = requests.Session()
+        self.req.headers = self.headers
 
     def delete(self, endpoint: Endpoint | str, params=None):
         return self.__request(Method.DELETE, endpoint, params)
 
     def get(self, endpoint: Endpoint | str, params=None):
-        return self.__request(Method.GET, endpoint, params)
+        self.req.params = params
+        return self.__request(Method.GET, endpoint)
 
     def patch(self, endpoint: Endpoint | str, params=None):
         return self.__request(Method.PATCH, endpoint, params)
@@ -47,11 +50,11 @@ class SevenApi:
         return self.__request(Method.POST, endpoint, params)
 
     def __request(self, method: Method, endpoint: Endpoint | str, params=None):
-        if params is None:
-            params = {}
-
         if not isinstance(endpoint, str):
             endpoint = endpoint.value
+
+        if params is None:
+            params = {}
 
         for key in list(params):
             if isinstance(params[key], bool):
@@ -60,12 +63,10 @@ class SevenApi:
                 else:
                     params.pop(key)
 
-        if method is Method.GET:
-            self.kwargs['params'] = params
-        else:
-            self.kwargs['data'] = params
+        self.kwargs['data'] = params
+
         url = '{}/{}'.format(self.baseUrl, endpoint)
-        res = requests.request(method.name, url, **self.kwargs)
+        res = self.req.request(method.name, url, **self.kwargs)
 
         try:
             json = res.json()
@@ -74,7 +75,5 @@ class SevenApi:
 
         if res.status_code != 200:
             raise ValueError('{} {} -> {}'.format(method, url, json))
-        # if res.status_code != 200 or not isinstance(json, dict) or not isinstance(json, list):
-        #     raise ValueError('{} {} -> {}'.format(method, url, json))
 
         return json

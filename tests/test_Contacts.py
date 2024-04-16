@@ -16,21 +16,24 @@ class TestContacts(BaseTest):
         except ValueError:
             self.fail("delete() raised ValueError unexpectedly!")
 
-    def assert_contact(self, contact: dict) -> None:
+    def __assert_contact(self, contact: dict) -> None:
         self.assertIsNotNone(contact['id'])
 
-    def test_contacts_read(self) -> None:
+    def test_contacts_list(self) -> None:
         res_create = self.resource.create({})
 
-        res = self.resource.list(ContactsListParams())
-        self.assertIn('count', res['pagingMetadata'])
-        self.assertIn('has_more', res['pagingMetadata'])
-        self.assertIn('limit', res['pagingMetadata'])
-        self.assertIn('offset', res['pagingMetadata'])
-        self.assertIn('total', res['pagingMetadata'])
+        params = ContactsListParams()
+        params.limit = 500
+        res = self.resource.list(params)
+        paging_metadata = res['pagingMetadata']
+        self.assertIn('count', paging_metadata)
+        self.assertIn('has_more', paging_metadata)
+        self.assertEqual(params.limit, paging_metadata['limit'])
+        self.assertIn('offset', paging_metadata)
+        self.assertIn('total', paging_metadata)
 
         for contact in res['data']:
-            self.assert_contact(contact)
+            self.__assert_contact(contact)
 
         self.resource.delete(res_create['id'])
 
@@ -57,6 +60,6 @@ class TestContacts(BaseTest):
 
         contact = self.resource.get(create_res['id'])
         self.assertEqual(contact['id'], str(create_res['id']))
-        self.assert_contact(contact)
+        self.__assert_contact(contact)
 
         self.resource.delete(create_res['id'])

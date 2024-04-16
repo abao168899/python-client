@@ -4,8 +4,7 @@ from tests.BaseTest import BaseTest
 
 class TestBalance(BaseTest):
     def test_balance(self) -> None:
-        resource = BalanceResource(self.client)
-        res = resource.retrieve()
+        res = BalanceResource(self.client).retrieve()
 
         self.assertIsInstance(res['amount'], float)
         self.assertIsInstance(res['currency'], str)

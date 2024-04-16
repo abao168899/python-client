@@ -4,39 +4,35 @@ from seven_api.resources.Resource import Resource
 
 class SubaccountsResource(Resource):
     def auto_charge(self, subaccount_id: int, amount: float, threshold: float) -> dict:
-        params = {
+        return self._client.post(Endpoint.SUBACCOUNTS, {
             'action': 'update',
             'amount': amount,
             'id': subaccount_id,
             'threshold': threshold
-        }
-        return self._client.post(Endpoint.SUBACCOUNTS, params)
+        })
 
     def create(self, email: str, name: str) -> dict:
-        params = {
+        return self._client.post(Endpoint.SUBACCOUNTS, {
             'action': 'create',
             'email': email,
             'name': name,
-        }
-        return self._client.post(Endpoint.SUBACCOUNTS, params)
+        })
 
     def delete(self, subaccount_id: int) -> dict:
-        params = {
+        return self._client.post(Endpoint.SUBACCOUNTS, {
             'action': 'delete',
             'id': subaccount_id,
-        }
-        return self._client.post(Endpoint.SUBACCOUNTS, params)
+        })
 
     def list(self, subaccount_id: int = None) -> list:
-        path = f'{Endpoint.SUBACCOUNTS.value}?action=read'
+        params = {'action': 'read'}
         if subaccount_id is not None:
-            path += f'&id={subaccount_id}'
-        return self._client.get(path)
+            params.update({'id': subaccount_id})
+        return self._client.get(Endpoint.SUBACCOUNTS, params)
 
     def transfer_credits(self, subaccount_id: int, amount: float) -> dict:
-        params = {
+        return self._client.post(Endpoint.SUBACCOUNTS, {
             'action': 'transfer_credits',
             'amount': amount,
             'id': subaccount_id,
-        }
-        return self._client.post(Endpoint.SUBACCOUNTS, params)
+        })

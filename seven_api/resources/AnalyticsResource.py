@@ -9,12 +9,6 @@ class AnalyticsParams(ToQueryString):
     start: str = None
     subaccounts: str = None
 
-    def __init__(self, end: str = None, label: str = None, start: str = None, subaccounts: str = None):
-        self.end = end
-        self.label = label
-        self.start = start
-        self.subaccounts = subaccounts
-
     def __iter__(self):
         yield 'end', self.end
         yield 'label', self.label
@@ -37,5 +31,7 @@ class AnalyticsResource(Resource):
 
     def __get(self, group_by: str, params: AnalyticsParams = None) -> list:
         if params is None:
-            params = {}
-        return self._client.get(f'{Endpoint.ANALYTICS.value}?group_by={group_by}&{params.as_qs()}')
+            params = AnalyticsParams()
+        payload = params.as_dict()
+        payload['group_by'] = group_by
+        return self._client.get(Endpoint.ANALYTICS, payload)

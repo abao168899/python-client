@@ -36,14 +36,15 @@ class TestSubaccounts(BaseTest):
 
     def test_subaccounts_list(self) -> None:
         timestamp = int(time.time())
-        email = f'tom.test.{timestamp}@seven.io'
-        name = f'Tom Test {timestamp}'
-        created = self.resource.create(email, name)
+        sub_id = self.resource.create(f'tom.test.{timestamp}@seven.io', f'Tom Test {timestamp}')['subaccount']['id']
+        res = self.resource.list(sub_id)
 
-        for subaccount in self.resource.list():
-            self.__assertSubaccount(subaccount)
+        self.assertTrue(len(res) == 1)
 
-        self.resource.delete(created['subaccount']['id'])
+        subaccount = res[0]
+        self.__assertSubaccount(subaccount)
+
+        self.resource.delete(sub_id)
 
     def test_subaccounts_list_with_id__empty(self) -> None:
         res = self.resource.list(0)

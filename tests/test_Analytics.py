@@ -32,9 +32,11 @@ class TestAnalytics(BaseTest):
 
     def test_analytics_by_country(self) -> None:
         today = datetime.today()
-        start = (today - timedelta(days=90)).strftime('%Y-%m-%d')
-        end = today.strftime('%Y-%m-%d')
-        res = self.resource.by_country(AnalyticsParams(end, 'label', start))
+        params = AnalyticsParams()
+        params.end = today.strftime('%Y-%m-%d')
+        params.label = 'label'
+        params.start = (today - timedelta(days=90)).strftime('%Y-%m-%d')
+        res = self.resource.by_country(params)
 
         self.assertIsInstance(res, list)
 

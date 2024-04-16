@@ -3,24 +3,24 @@ from seven_api.resources.Resource import Resource
 
 
 class LookupResource(Resource):
-    def cnam(self, number: str) -> list:
-        return self.__get('cnam', number)
+    def cnam(self, numbers: str|list) -> list:
+        return self.__get('cnam', numbers)
 
-    def hlr(self, params=None) -> list:
-        return self.__get('hlr', params)
+    def hlr(self, numbers: str|list) -> list:
+        return self.__get('hlr', numbers)
 
-    def mnp(self, params=None) -> list:
-        return self.__get('mnp', params)
+    def mnp(self, numbers: str|list) -> list:
+        return self.__get('mnp', numbers)
 
-    def format(self, params=None) -> list:
-        return self.__get('format', params)
+    def format(self, numbers: str|list) -> list:
+        return self.__get('format', numbers)
 
-    def rcs(self, params=None) -> list:
-        return self.__get('rcs', params)
+    def rcs(self, numbers: str|list) -> list:
+        return self.__get('rcs', numbers)
 
-    def __get(self, lookup_type: str, number: str) -> list:
-        res = self._client.get('{}/{}?number={}'.format(Endpoint.LOOKUP.value, lookup_type, number))
+    def __get(self, lookup_type: str, numbers: str|list) -> list:
+        if isinstance(numbers, list):
+            numbers = ','.join(numbers)
+        res = self._client.get(f'{Endpoint.LOOKUP.value}/{lookup_type}?number={numbers}')
 
-        if isinstance(res, dict):
-            return [res]
-        return res
+        return [res] if isinstance(res, dict) else res
