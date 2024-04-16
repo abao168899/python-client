@@ -1,15 +1,21 @@
 from seven_api.classes.Endpoint import Endpoint
-from seven_api.classes.Method import Method
 from seven_api.resources.Resource import Resource
 
 
 class SmsResource(Resource):
-    def delete(self, ids: list) -> dict:
-        return self._client.request(Method.DELETE, Endpoint.SMS, {'ids': ids}).json()
+    def delete(self, ids: list | str) -> dict:
+        if isinstance(ids, str):
+            ids = [ids]
+        ids = ','.join(ids)
+        return self._client.delete(f'{Endpoint.SMS.value}?ids[]={ids}')
 
-    def dispatch(self, params: dict) -> dict:
-        params['json'] = True
-        return self._client.request(Method.POST, Endpoint.SMS, params).json()
+    def dispatch(self, to: list | str, text: str, params: dict) -> dict:
+        params['text'] = text
+        if isinstance(to, list):
+            to = ','.join(to)
+        params['to'] = to
+        return self._client.post(Endpoint.SMS, params)
 
-    def status(self, ids: list) -> dict:
-        return self._client.request(Method.GET, Endpoint.STATUS, {'msg_id': ids, 'json': True}).json()
+    def status(self, ids: list) -> list:
+        msg_ids = ','.join(ids)
+        return self._client.get(f'{Endpoint.STATUS.value}?msg_id={msg_ids}')

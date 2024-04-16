@@ -1,52 +1,51 @@
+from seven_api.resources.SmsResource import SmsResource
 from tests.BaseTest import BaseTest
 
 
 class TestSms(BaseTest):
-    def test_sms(self) -> None:
-        res = self.client.sms('+491716992343', 'HEY!!')
-        self.assertEqual(res, '100')
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.resource = SmsResource(self.client)
 
-        res = self.client.sms('+491716992343', 'HEY!!', {'return_msg_id': True})
-        code, sid = res.splitlines()
-        self.assertEqual(code, '100')
-        self.assertIsInstance(sid, str)
-
-        res = self.client.sms('+491716992343', 'HEY!!',
-                              {'return_msg_id': True, 'details': True})
-        lines = res.splitlines()
-        self.assertEqual(lines[0], '100')
-        self.assertIsInstance(lines[1], str)
-        self.assertIsInstance(lines[2], str)
-        self.assertIsInstance(lines[3], str)
-        self.assertIsInstance(lines[4], str)
-        self.assertIsInstance(lines[5], str)
-        self.assertIsInstance(lines[6], str)
-        self.assertIsInstance(lines[7], str)
-        self.assertIsInstance(lines[8], str)
-        self.assertIsInstance(lines[9], str)
-        self.assertIsInstance(lines[10], str)
-
-        # JSON
-        res = self.client.sms('+491716992343', 'HEY!!', {'json': True, })
-        self.assertEqual(res['success'], '100')
-        self.assertIsInstance(res['total_price'], (float, int))
+    def test_sms_dispatch__simple(self) -> None:
+        to = '491716992343'
+        text = 'HEY!!'
+        res = self.resource.dispatch(to, text, {'delay': '2050-12-31 12:34:56'})
+        self.assertEqual('100', res['success'])
+        self.assertIsInstance(res['total_price'], float)
         self.assertIsInstance(res['balance'], float)
         self.assertIsInstance(res['debug'], str)
         self.assertIsInstance(res['sms_type'], str)
         self.assertIsInstance(res['messages'], list)
-        self.assertGreater(len(res['messages']), 0)
-        message = BaseTest.first_list_item_fallback(res['messages'])
-        if message:
-            if 'true' == res['debug']:
-                self.assertIsNone(message['id'])
-            else:
-                self.assertIsInstance(message['id'], int)
-            self.assertIsInstance(message['sender'], str)
-            self.assertIsInstance(message['recipient'], str)
-            self.assertIsInstance(message['text'], str)
-            self.assertIsInstance(message['encoding'], str)
-            self.assertIsInstance(message['parts'], int)
-            self.assertIsInstance(message['price'], (float, int))
-            self.assertIsInstance(message['success'], bool)
-            self.assertIn('error', message)
-            self.assertIn('error_text', message)
+        self.assertEqual(1, len(res['messages']))
+
+        message = res['messages'][0]
+        msg_id = message['id']
+        if 'true' == res['debug']:
+            self.assertIsNone(msg_id)
+        else:
+            self.assertIsInstance(msg_id, str)
+        self.assertIsInstance(message['sender'], str)
+        self.assertEqual(to, message['recipient'])
+        self.assertEqual(text, message['text'])
+        self.assertEqual('gsm', message['encoding'])
+        self.assertEqual(1, message['parts'])
+        self.assertIsInstance(message['price'], float)
+        self.assertTrue(message['success'])
+        self.assertIn('error', message)
+        self.assertIsNone(message['error'])
+        self.assertIn('error_text', message)
+        self.assertIsNone(message['error_text'])
+
+        msg_ids = [msg_id]
+
+        res = self.resource.status(msg_ids)
+        self.assertEqual(1, len(res))
+        status = res[0]
+        self.assertEqual(msg_id, status['id'])
+        self.assertIsNone(status['status'])
+        self.assertIsNone(status['status_time'])
+
+        res = self.resource.delete(msg_ids)
+        self.assertEqual(msg_ids, res['deleted'])
+        self.assertTrue(res['success'])
