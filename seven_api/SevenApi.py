@@ -1,10 +1,16 @@
 from enum import Enum
-from json import JSONDecodeError
 
 import requests
 
 from seven_api.classes.Endpoint import Endpoint
-from seven_api.classes.Method import Method
+from seven_api.classes.ExtendedEnum import ExtendedEnum
+
+class Method(ExtendedEnum):
+    DELETE = 0
+    GET = 1
+    PATCH = 2
+    POST = 3
+
 
 class OrderDirection(str, Enum):
     Ascending = "asc"
@@ -27,22 +33,21 @@ class SevenApi:
         self.kwargs = {'headers': self.headers}
 
     def delete(self, endpoint: Endpoint | str, params=None):
-        return self.request(Method.DELETE, endpoint, params)
+        return self.__request(Method.DELETE, endpoint, params)
 
     def get(self, endpoint: Endpoint | str, params=None):
-        return self.request(Method.GET, endpoint, params)
+        return self.__request(Method.GET, endpoint, params)
 
     def patch(self, endpoint: Endpoint | str, params=None):
-        return self.request(Method.PATCH, endpoint, params)
+        return self.__request(Method.PATCH, endpoint, params)
 
     def post(self, endpoint: Endpoint | str, params=None):
-        return self.request(Method.POST, endpoint, params)
+        return self.__request(Method.POST, endpoint, params)
 
-    def request(self, method: Method, endpoint: Endpoint | str, params=None):
+    def __request(self, method: Method, endpoint: Endpoint | str, params=None):
         if params is None:
             params = {}
 
-        method = method.value
         if not isinstance(endpoint, str):
             endpoint = endpoint.value
 
@@ -58,7 +63,7 @@ class SevenApi:
         else:
             self.kwargs['data'] = params
         url = '{}/{}'.format(self.baseUrl, endpoint)
-        res = requests.request(method, url, **self.kwargs)
+        res = requests.request(method.name, url, **self.kwargs)
 
         try:
             json = res.json()

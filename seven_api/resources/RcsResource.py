@@ -1,5 +1,4 @@
 from seven_api.classes.Endpoint import Endpoint
-from seven_api.classes.Method import Method
 from seven_api.resources.Resource import Resource
 from enum import Enum
 
@@ -29,4 +28,4 @@ class RcsResource(Resource):
         key = target.value
 
         params = {'event': event.name, key: value, 'from': agent}
-        return self._client.request(Method.POST, f'{Endpoint.RCS.value}/events', params)
+        return self._client.post(f'{Endpoint.RCS.value}/events', params)

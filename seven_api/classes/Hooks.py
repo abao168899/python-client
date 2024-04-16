@@ -11,6 +11,6 @@ class HookEventType(ExtendedEnum):
 
 
 class HookRequestMethod(ExtendedEnum):
-    GET = "GET"
-    JSON = "JSON"
-    POST = "POST"
+    GET = 'GET'
+    JSON = 'JSON'
+    POST = 'POST'
