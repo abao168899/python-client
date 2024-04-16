@@ -5,6 +5,7 @@ import requests
 from seven_api.classes.Endpoint import Endpoint
 from seven_api.classes.ExtendedEnum import ExtendedEnum
 
+
 class Method(ExtendedEnum):
     DELETE = 0
     GET = 1
@@ -19,11 +20,12 @@ class OrderDirection(str, Enum):
 
 class SevenApi:
     apiKey: str
-    baseUrl = 'https://gateway.seven.io/api'
+    baseUrl: str
     sentWith: str
 
-    def __init__(self, api_key: str, sent_with: str = 'Python'):
+    def __init__(self, api_key: str, sent_with: str = 'Python', base_url: str = 'https://gateway.seven.io/api'):
         self.apiKey = api_key
+        self.baseUrl = base_url
         self.sentWith = sent_with
         self.headers = {
             'Accept': 'application/json',

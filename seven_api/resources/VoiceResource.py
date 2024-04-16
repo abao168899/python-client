@@ -16,8 +16,7 @@ class VoiceResource(Resource):
         return self._client.post(Endpoint.VOICE, params)
 
     def validate_phone_number(self, number: str, callback: str = None) -> dict:
-        params = {
+        return self._client.post(Endpoint.VALIDATE_FOR_VOICE, {
             'callback': callback,
             'number': number,
-        }
-        return self._client.post(Endpoint.VALIDATE_FOR_VOICE, params)
+        })

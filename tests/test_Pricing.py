@@ -14,7 +14,6 @@ class TestPricing(BaseTest):
         for country in res['countries']:
             self.__assert_country(country)
 
-
     def test_pricing_get__country_code(self) -> None:
         country_code = 'DE'
         res = self.resource.get(country_code)

@@ -23,7 +23,6 @@ class TestAnalytics(BaseTest):
             self.assertIsInstance(entry['account'], str)
             self.assert_base(entry)
 
-
     def test_analytics_by_date(self) -> None:
         res = self.resource.by_date(AnalyticsParams())
 

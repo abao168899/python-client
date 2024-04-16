@@ -20,8 +20,7 @@ class LookupResource(Resource):
 
     def __get(self, lookup_type: str, number: str) -> list:
         res = self._client.get('{}/{}?number={}'.format(Endpoint.LOOKUP.value, lookup_type, number))
-        
+
         if isinstance(res, dict):
             return [res]
         return res
-

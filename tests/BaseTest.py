@@ -7,6 +7,9 @@ from seven_api.SevenApi import SevenApi
 
 
 class BaseTest(unittest.TestCase):
+    API_KEY = os.environ.get('SEVEN_API_KEY')
+    BASE_URL = 'https://gateway.seven.io/api'
+    SENT_WITH = 'Python-Test'
     @staticmethod
     def is_valid_datetime(timestamp: str, formatting: str) -> bool:
         try:
@@ -30,7 +33,7 @@ class BaseTest(unittest.TestCase):
     def __init__(self, *args, **kwargs) -> None:
         super(BaseTest, self).__init__(*args, **kwargs)
 
-        self.client = SevenApi(os.environ.get('SEVEN_API_KEY'))
+        self.client = SevenApi(self.API_KEY, self.SENT_WITH, self.BASE_URL)
 
 
 if __name__ == '__main__':

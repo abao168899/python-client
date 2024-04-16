@@ -11,6 +11,8 @@ class Endpoint(ExtendedEnum):
     LOOKUP = 'lookup'
     PRICING = 'pricing'
     RCS = 'rcs'
+    RCS_EVENTS = f'{RCS}/events'
+    RCS_MESSAGES = f'{RCS}/messages'
     SMS = 'sms'
     STATUS = 'status'
     SUBACCOUNTS = 'subaccounts'

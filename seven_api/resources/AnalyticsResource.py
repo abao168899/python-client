@@ -36,5 +36,6 @@ class AnalyticsResource(Resource):
         return self.__get('subaccount', params)
 
     def __get(self, group_by: str, params: AnalyticsParams = None) -> list:
-        if params is None: params = {}
+        if params is None:
+            params = {}
         return self._client.get(f'{Endpoint.ANALYTICS.value}?group_by={group_by}&{params.as_qs()}')
