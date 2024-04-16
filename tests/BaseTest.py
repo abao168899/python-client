@@ -25,7 +25,7 @@ class BaseTest(unittest.TestCase):
 
     @staticmethod
     def create_random_url() -> str:
-        return "http://my.tld/{0}".format(str(uuid.uuid4()))
+        return "http://python.tld/{0}".format(str(uuid.uuid4()))
 
     def __init__(self, *args, **kwargs) -> None:
         super(BaseTest, self).__init__(*args, **kwargs)

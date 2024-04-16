@@ -1,16 +1,24 @@
-from seven_api.classes import HooksAction, HookEventType, HookRequestMethod
+from seven_api.classes.Hooks import HookEventType, HookRequestMethod
+from seven_api.resources.HooksResource import HooksResource
 from tests.BaseTest import BaseTest
 
 
 class TestHooks(BaseTest):
-    hook_id = None
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.resource = HooksResource(self.client)
 
     def test_read(self) -> None:
-        res = self.client.hooks(HooksAction.READ)
+        res = self.resource.subscribe({
+            'event_type': HookEventType.SMS_INBOUND.value,
+            'target_url': BaseTest.create_random_url(),
+        })
+        hook_id = res['id']
 
-        self.assertIsInstance(res, dict)
+        res = self.resource.read()
+
         self.assertIsInstance(res['hooks'], list)
-        self.assertIsInstance(res['success'], bool)
+        self.assertTrue(res['success'])
 
         for hook in res['hooks']:
             self.assertIsInstance(hook, dict)
@@ -23,29 +31,34 @@ class TestHooks(BaseTest):
             self.assertIsInstance(hook['target_url'], str)
             self.assertGreater(len(hook['target_url']), 0)
 
+        self.resource.unsubscribe(hook_id)
+
     def test_subscribe(self) -> None:
-        res = self.client.hooks(HooksAction.SUBSCRIBE, {
+        params = {
+            'event_filter': '491716992343',
             'event_type': HookEventType.SMS_INBOUND.value,
             'request_method': HookRequestMethod.GET.value,
             'target_url': BaseTest.create_random_url(),
-        })
+        }
+        res = self.resource.subscribe(params)
+        self.assertIsInstance(res['id'], int)
+        self.assertGreater(res['id'], 0)
+        self.assertTrue(res['success'])
 
-        success = 'id' in res
+        hooks = self.resource.read()['hooks']
+        hook = next(x for x in hooks if x['id'] == str(res['id']))
+        self.assertEqual(params['event_filter'], hook['event_filter'])
+        self.assertEqual(params['event_type'], hook['event_type'])
+        self.assertEqual(params['request_method'], hook['request_method'])
+        self.assertEqual(params['target_url'], hook['target_url'])
 
-        self.assertIsInstance(res, dict)
-
-        if success:
-            self.assertIsInstance(res['id'], int)
-            self.assertGreater(res['id'], 0)
-            self.hook_id = res['id']
-
-        self.assertEqual(res['success'], success)
+        self.resource.unsubscribe(res['id'])
 
     def test_unsubscribe(self) -> None:
-        if self.hook_id is None:
-            return
+        hook_id = self.resource.subscribe({
+            'event_type': HookEventType.SMS_INBOUND.value,
+            'target_url': BaseTest.create_random_url(),
+        })['id']
 
-        res = self.client.hooks(HooksAction.UNSUBSCRIBE, {'id': self.hook_id})
-
-        self.assertIsInstance(res, dict)
-        self.assertIsInstance(res['success'], bool)
+        res = self.resource.unsubscribe(hook_id)
+        self.assertTrue(res['success'])

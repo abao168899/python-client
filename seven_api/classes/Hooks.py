@@ -1,12 +1,6 @@
 from seven_api.classes.ExtendedEnum import ExtendedEnum
 
 
-class HooksAction(ExtendedEnum):
-    READ = 'read'
-    SUBSCRIBE = 'subscribe'
-    UNSUBSCRIBE = 'unsubscribe'
-
-
 class HookEventType(ExtendedEnum):
     ALL = 'all'
     SMS_STATUS = 'dlr'
@@ -17,6 +11,6 @@ class HookEventType(ExtendedEnum):
 
 
 class HookRequestMethod(ExtendedEnum):
-    GET = 'GET'
-    JSON = 'JSON'
-    POST = 'POST'
+    GET = "GET"
+    JSON = "JSON"
+    POST = "POST"
