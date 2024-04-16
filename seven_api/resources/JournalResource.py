@@ -1,23 +1,41 @@
 from seven_api.classes.Endpoint import Endpoint
-from seven_api.classes.Journal import JournalType
-from seven_api.classes.Method import Method
+from seven_api.classes.ToQueryString import ToQueryString
 from seven_api.resources.Resource import Resource
 
 
+class JournalParams(ToQueryString):
+    date_from: str = None
+    date_to: str = None
+    id: int = None
+    limit: int = None
+    offset: int = None
+    state: str = None
+    to: str = None
+
+    def __iter__(self):
+        yield 'date_from', self.date_from
+        yield 'date_to', self.date_to
+        yield 'id', self.id
+        yield 'limit', self.limit
+        yield 'offset', self.offset
+        yield 'state', self.state
+        yield 'to', self.to
+
+
 class JournalResource(Resource):
-    def outbound(self, params=None) -> list:
-        return self.__get(JournalType.OUTBOUND, params)
+    def outbound(self, params: JournalParams = None) -> list:
+        return self.__get('outbound', params)
 
-    def inbound(self, params=None) -> list:
-        return self.__get(JournalType.INBOUND, params)
+    def inbound(self, params: JournalParams = None) -> list:
+        return self.__get('inbound', params)
 
-    def voice(self, params=None) -> list:
-        return self.__get(JournalType.VOICE, params)
+    def voice(self, params: JournalParams = None) -> list:
+        return self.__get('voice', params)
 
-    def replies(self, params=None) -> list:
-        return self.__get(JournalType.REPLIES, params)
+    def replies(self, params: JournalParams = None) -> list:
+        return self.__get('replies', params)
 
-    def __get(self, journal_type: JournalType, params=None) -> list:
-        if params is None: params = {}
-        params['type'] = journal_type.value
-        return self._client.request(Method.GET, Endpoint.JOURNAL, params).json()
+    def __get(self, journal_type: str, params: JournalParams = None) -> list:
+        if params is None:
+            params = JournalParams()
+        return self._client.get(f'{Endpoint.JOURNAL.value}/{journal_type}?{params.as_qs()}')

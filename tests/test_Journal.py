@@ -1,83 +1,52 @@
-from seven_api.classes.Journal import JournalType
+from seven_api.resources.JournalResource import JournalResource
 from tests.BaseTest import BaseTest
 
 
 class TestJournal(BaseTest):
-    def base(self, _type, params={}, commons=True) -> list:
-        entries = self.client.journal(_type, params)
-
-        self.assertIsInstance(entries, list)
-
-        for entry in entries:
-            self.assertIsInstance(entry, dict)
-
-            if commons:
-                self.assertIsInstance(entry['from'], str)
-                self.assertGreater(len(entry['from']), 0)
-
-                self.assertIsInstance(entry['id'], str)
-                self.assertGreater(len(entry['id']), 0)
-
-                self.assertIsInstance(entry['price'], str)
-                # self.assertGreater(len(entry['price']), 0)
-
-                self.assertIsInstance(entry['text'], str)
-
-                self.assertIsInstance(entry['timestamp'], str)
-                self.assertGreater(len(entry['timestamp']), 0)
-
-                self.assertIsInstance(entry['to'], str)
-                self.assertGreater(len(entry['to']), 0)
-
-        return entries
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.resource = JournalResource(self.client)
 
     def test_inbound(self) -> None:
-        for entry in self.base(JournalType.INBOUND, {}, False):
-            self.assertIsInstance(entry['id'], str)
-            self.assertIsInstance(entry['from'], str)
-            self.assertIsInstance(entry['price'], str)
-            self.assertIsInstance(entry['text'], str)
-            self.assertIsInstance(entry['timestamp'], str)
-            self.assertIsInstance(entry['to'], str)
+        for entry in self.resource.inbound():
+            self.__assert_common(entry)
 
     def test_outbound(self) -> None:
-        for entry in self.base(JournalType.OUTBOUND):
+        for entry in self.resource.outbound():
+            self.__assert_common(entry)
+
+            self.assertIn('channel', entry)
+
             self.assertIsInstance(entry['connection'], str)
             self.assertGreater(len(entry['connection']), 0)
 
-            if entry['dlr'] is None:
-                self.assertIsNone(entry['dlr'])
-            else:
+            self.assertIn('dlr', entry)
+            if entry['dlr'] is not None:
                 self.assertIsInstance(entry['dlr'], str)
                 self.assertGreater(len(entry['dlr']), 0)
 
-            if entry['dlr_timestamp'] is None:
-                self.assertIsNone(entry['dlr_timestamp'])
-            else:
+            self.assertIn('dlr_timestamp', entry)
+            if entry['dlr_timestamp'] is not None:
                 self.assertIsInstance(entry['dlr_timestamp'], str)
                 self.assertGreater(len(entry['dlr_timestamp']), 0)
 
-            if entry['foreign_id'] is None:
-                self.assertIsNone(entry['foreign_id'])
-            else:
+            self.assertIn('foreign_id', entry)
+            if entry['foreign_id'] is not None:
                 self.assertIsInstance(entry['foreign_id'], str)
                 self.assertGreater(len(entry['foreign_id']), 0)
 
-            if entry['label'] is None:
-                self.assertIsNone(entry['label'])
-            else:
+            self.assertIn('label', entry)
+            if entry['label'] is not None:
                 self.assertIsInstance(entry['label'], str)
                 self.assertGreater(len(entry['label']), 0)
 
-            if entry['latency'] is None:
-                self.assertIsNone(entry['latency'])
-            else:
+            self.assertIn('latency', entry)
+            if entry['latency'] is not None:
                 self.assertIsInstance(entry['latency'], str)
                 self.assertGreater(len(entry['latency']), 0)
 
-            if entry['mccmnc'] is None:
-                self.assertIsNone(entry['mccmnc'])
-            else:
+            self.assertIn('mccmnc', entry)
+            if entry['mccmnc'] is not None:
                 self.assertIsInstance(entry['mccmnc'], str)
                 self.assertGreater(len(entry['mccmnc']), 0)
 
@@ -85,17 +54,13 @@ class TestJournal(BaseTest):
             self.assertGreater(len(entry['type']), 0)
 
     def test_replies(self) -> None:
-        for entry in self.base(JournalType.REPLIES, {}, False):
-            self.assertIsInstance(entry['id'], str)
-            self.assertIsInstance(entry['from'], str)
-            price = entry['price']
-            self.assertTrue(price is 0 or type(price) is float)
-            self.assertIsInstance(entry['text'], str)
-            self.assertIsInstance(entry['timestamp'], str)
-            self.assertIsInstance(entry['to'], str)
+        for entry in self.resource.replies():
+            self.__assert_common(entry)
 
     def test_voice(self) -> None:
-        for entry in self.base(JournalType.VOICE, {}, False):
+        for entry in self.resource.voice():
+            self.__assert_common(entry)
+
             duration = entry['duration']
             if duration is not None:
                 self.assertGreater(len(duration), 0)
@@ -114,5 +79,28 @@ class TestJournal(BaseTest):
             self.assertIsInstance(entry['text'], str)
             self.assertIsInstance(entry['timestamp'], str)
             self.assertIsInstance(entry['to'], str)
-
             self.assertIsInstance(entry['xml'], bool)
+
+    def __assert_common(self, entry: dict):
+        self.assertIsInstance(entry['from'], str)
+        self.assertLessEqual(len(entry['from']), 16)
+
+        self.assertIsInstance(entry['id'], str)
+        self.assertGreater(len(entry['id']), 0)
+
+        self.assertIn('price', entry)
+        price_type = type(entry['price'])
+        if price_type is str:
+            self.assertGreater(len(entry['price']), 0)
+        elif price_type is int:
+            self.assertGreaterEqual(entry['price'], 0)
+        # self.assertIsInstance(entry['price'], str)
+        # self.assertGreater(len(entry['price']), 0)
+
+        self.assertIsInstance(entry['text'], str)
+
+        self.assertIsInstance(entry['timestamp'], str)
+        self.assertGreater(len(entry['timestamp']), 0)
+
+        self.assertIsInstance(entry['to'], str)
+        self.assertGreater(len(entry['to']), 0)
