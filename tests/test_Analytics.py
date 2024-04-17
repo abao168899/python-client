@@ -10,21 +10,21 @@ class TestAnalytics(BaseTest):
         self.resource = AnalyticsResource(self.client)
 
     def test_analytics_by_label(self) -> None:
-        res = self.resource.by_label(AnalyticsParams())
+        res = self.resource.by_label()
 
         for entry in res:
             self.assertIsInstance(entry.label, str)
             self.assert_base(entry)
 
     def test_analytics_by_subaccount(self) -> None:
-        res = self.resource.by_subaccount(AnalyticsParams())
+        res = self.resource.by_subaccount()
 
         for entry in res:
             self.assertIsInstance(entry.account, str)
             self.assert_base(entry)
 
     def test_analytics_by_date(self) -> None:
-        res = self.resource.by_date(AnalyticsParams())
+        res = self.resource.by_date()
 
         for entry in res:
             self.assertIsInstance(entry.date, str)
@@ -32,10 +32,9 @@ class TestAnalytics(BaseTest):
 
     def test_analytics_by_country(self) -> None:
         today = datetime.today()
-        params = AnalyticsParams()
-        params.end = today.strftime('%Y-%m-%d')
-        params.label = 'label'
-        params.start = (today - timedelta(days=90)).strftime('%Y-%m-%d')
+        params = AnalyticsParams(
+            end=today.strftime('%Y-%m-%d'), label='label', start=(today - timedelta(days=90)).strftime('%Y-%m-%d')
+        )
         res = self.resource.by_country(params)
 
         for entry in res:

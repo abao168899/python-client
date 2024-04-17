@@ -52,10 +52,11 @@ label_schema = marshmallow_dataclass.class_schema(AnalyticsByLabel)()
 
 
 class AnalyticsParams(ToQueryString):
-    end: str = None
-    label: str = None
-    start: str = None
-    subaccounts: str = None
+    def __init__(self, end: str = None, label: str = None, start: str = None, subaccounts: str = None):
+        self.end = end
+        self.label = label
+        self.start = start
+        self.subaccounts = subaccounts
 
     def __iter__(self):
         yield 'end', self.end

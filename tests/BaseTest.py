@@ -10,6 +10,7 @@ class BaseTest(unittest.TestCase):
     API_KEY = os.environ.get('SEVEN_API_KEY')
     BASE_URL = 'https://gateway.seven.io/api'
     SENT_WITH = 'Python-Test'
+
     @staticmethod
     def is_valid_datetime(timestamp: str, formatting: str) -> bool:
         try:
@@ -17,14 +18,6 @@ class BaseTest(unittest.TestCase):
             return True
         except ValueError:
             return False
-
-    @staticmethod
-    def is_valid_delimiter(csv_: str) -> bool:
-        return ';' == csv.Sniffer().sniff(csv_).delimiter
-
-    @staticmethod
-    def first_list_item_fallback(res: list) -> any:
-        return next(iter(res), None)
 
     @staticmethod
     def create_random_url() -> str:
