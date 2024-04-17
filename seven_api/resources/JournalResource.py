@@ -39,5 +39,5 @@ class JournalResource(Resource):
         if params is None:
             params = JournalParams()
 
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.get(f'{Endpoint.JOURNAL.value}/{journal_type}', params=params.as_dict()).json()

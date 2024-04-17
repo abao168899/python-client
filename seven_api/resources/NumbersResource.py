@@ -24,33 +24,33 @@ class AvailableParams(ToQueryString):
 
 class NumbersResource(Resource):
     def active(self) -> dict:
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.get(Endpoint.NUMBERS_ACTIVE.value).json()
 
     def available(self, params: AvailableParams = None) -> dict:
         if params is None:
             params = AvailableParams()
 
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.get(Endpoint.NUMBERS_AVAILABLE.value, params=params.as_dict()).json()
 
     def delete(self, number: str, delete_immediately: bool = False) -> dict:
         path = f'{Endpoint.NUMBERS_ACTIVE.value}/{number}'
         if delete_immediately:
             path += f'?delete_immediately={str(delete_immediately).lower()}'
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.delete(path).json()
 
     def get(self, number: str) -> dict:
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.get(f'{Endpoint.NUMBERS_ACTIVE.value}/{number}').json()
 
     def order(self, number: str, payment_interval: PaymentInterval = PaymentInterval.Annually) -> dict:
         params = {'number': number, 'payment_interval': payment_interval.value}
         print(params)
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.post(Endpoint.NUMBERS_ORDER, data=params).json()
 
     def update(self, number: str, params: dict) -> dict:
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.patch(f'{Endpoint.NUMBERS_ACTIVE.value}/{number}', data=params).json()

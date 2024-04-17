@@ -5,15 +5,15 @@ from seven_api.resources.Resource import Resource
 
 class HooksResource(Resource):
     def read(self) -> dict:
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.get(Endpoint.HOOKS.value).json()
 
     def subscribe(self, params: dict) -> dict:
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.post(Endpoint.HOOKS.value, data=params).json()
 
     def unsubscribe(self, hook_id: int) -> dict:
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.delete(f'{Endpoint.HOOKS.value}?id={hook_id}').json()
 
 

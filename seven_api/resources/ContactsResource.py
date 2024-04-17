@@ -35,26 +35,26 @@ class ContactsResource(Resource):
         properties['avatar'] = avatar
         properties['groups'] = groups
 
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.post(Endpoint.CONTACTS.value, data=properties).json()
 
     def delete(self, contact_id: int):
-        with self.__api.client() as client:
+        with self._api.client() as client:
             client.delete(f'{Endpoint.CONTACTS.value}/{contact_id}')
 
     def get(self, contact_id: int) -> dict:
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.get(f'{Endpoint.CONTACTS.value}/{contact_id}').json()
 
     def list(self, params: ContactsListParams = None) -> dict:
         if params is None:
             params = ContactsListParams()
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.get(Endpoint.CONTACTS.value, params=params.as_dict()).json()
 
     def update(self, params: dict) -> dict:
         contact_id = params['id']
         del params['id']
 
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.patch(f'{Endpoint.CONTACTS.value}/{contact_id}', data=params).json()

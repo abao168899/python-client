@@ -22,6 +22,6 @@ class LookupResource(Resource):
         if isinstance(numbers, list):
             numbers = ','.join(numbers)
 
-        with self.__api.client() as client:
+        with self._api.client() as client:
             res = client.get(f'{Endpoint.LOOKUP.value}/{lookup_type}', params={'number': numbers}).json()
             return [res] if isinstance(res, dict) else res

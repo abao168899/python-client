@@ -21,7 +21,8 @@ classifiers = [
 ]
 dependencies = [
     'importlib-metadata; python_version<"3.8"',
-    'httpx[http2]'
+    'httpx[http2]',
+    'marshmallow-dataclass'
 ]
 dynamic = ['version']
 packages = [{ include = "seven_api" }]

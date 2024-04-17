@@ -9,7 +9,7 @@ class SmsResource(Resource):
             ids = [ids]
         ids = ','.join(ids)
 
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.delete(Endpoint.SMS.value, params={'ids[]': ids}).json()
 
     def dispatch(self, to: list | str, text: str, params: dict = None) -> dict:
@@ -20,7 +20,7 @@ class SmsResource(Resource):
             to = ','.join(to)
         params['to'] = to
 
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.post(Endpoint.SMS.value, data=params).json()
 
     def status(self, ids: list | str) -> list:
@@ -28,7 +28,7 @@ class SmsResource(Resource):
             ids = [ids]
         ids = ','.join(ids)
 
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.get(Endpoint.STATUS.value, params={'msg_id': ids}).json()
 
 

@@ -10,7 +10,7 @@ class SubaccountsResource(Resource):
             'id': subaccount_id,
             'threshold': threshold
         }
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.post(Endpoint.SUBACCOUNTS.value, data=payload).json()
 
     def create(self, email: str, name: str) -> dict:
@@ -19,7 +19,7 @@ class SubaccountsResource(Resource):
             'email': email,
             'name': name,
         }
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.post(Endpoint.SUBACCOUNTS.value, data=payload).json()
 
     def delete(self, subaccount_id: int) -> dict:
@@ -27,14 +27,14 @@ class SubaccountsResource(Resource):
             'action': 'delete',
             'id': subaccount_id,
         }
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.post(Endpoint.SUBACCOUNTS.value, data=payload).json()
 
     def list(self, subaccount_id: int = None) -> list:
         params = {'action': 'read'}
         if subaccount_id is not None:
             params.update({'id': subaccount_id})
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.get(Endpoint.SUBACCOUNTS.value, params=params).json()
 
     def transfer_credits(self, subaccount_id: int, amount: float) -> dict:
@@ -43,5 +43,5 @@ class SubaccountsResource(Resource):
             'amount': amount,
             'id': subaccount_id,
         }
-        with self.__api.client() as client:
+        with self._api.client() as client:
             return client.post(Endpoint.SUBACCOUNTS.value, data=payload).json()
