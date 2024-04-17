@@ -1,4 +1,4 @@
-from seven_api.resources.LookupResource import LookupResource
+from seven_api.resources.LookupResource import LookupResource, RcsCapabilities, PhoneNumberFormat, Carrier, CnamLookup
 from tests.BaseTest import BaseTest
 
 
@@ -7,11 +7,11 @@ class TestLookup(BaseTest):
         super().__init__(*args, **kwargs)
         self.resource = LookupResource(self.client)
 
-    def __assertCnam(self, cnam: dict):
-        self.assertIsInstance(cnam['code'], str)
-        self.assertIsInstance(cnam['name'], str)
-        self.assertIsInstance(cnam['number'], str)
-        self.assertIsInstance(cnam['success'], str)
+    def __assertCnam(self, cnam: CnamLookup):
+        self.assertTrue(len(cnam.code) > 0)
+        self.assertTrue(len(cnam.name) > 0)
+        self.assertTrue(len(cnam.number) > 0)
+        self.assertIn(cnam.success, ['true', 'false'])
 
     def test_lookup_cnam(self) -> None:
         res = self.resource.cnam('+491716992343')
@@ -26,7 +26,7 @@ class TestLookup(BaseTest):
         self.assertEqual(len(numbers), len(res))
 
         for lookup in res:
-            self.assertIn(lookup['number'], numbers)
+            self.assertIn(lookup.number, numbers)
             self.__assertCnam(lookup)
 
     def test_lookup_format(self) -> None:
@@ -42,70 +42,65 @@ class TestLookup(BaseTest):
         self.assertEqual(len(numbers), len(res))
 
         for lookup in res:
-            self.assertIn(lookup['international'], numbers)
+            self.assertIn(lookup.international, numbers)
             self.__assertFormat(lookup)
 
     def test_lookup_hlr(self) -> None:
-        def is_valid_carrier(carrier: dict):
-            valid = isinstance(carrier['network_code'], str)
-            valid = isinstance(carrier['name'], str) if valid else False
-            valid = isinstance(carrier['country'], str) if valid else False
-            valid = isinstance(carrier['network_type'], str) if valid else False
+        def is_valid_carrier(carrier: Carrier):
+            valid = isinstance(carrier.network_code, str)
+            valid = isinstance(carrier.name, str) if valid else False
+            valid = isinstance(carrier.country, str) if valid else False
+            valid = isinstance(carrier.network_type, str) if valid else False
 
             return valid
 
-        for lookup in self.resource.hlr('+491716992343'):
-            self.assertIsInstance(lookup, dict)
-            self.assertIsInstance(lookup['status'], bool)
-            self.assertIsInstance(lookup['status_message'], str)
-            self.assertIsInstance(lookup['lookup_outcome'], bool)
-            self.assertIsInstance(lookup['lookup_outcome_message'], str)
-            self.assertIsInstance(lookup['international_format_number'], str)
-            self.assertIsInstance(lookup['international_formatted'], str)
-            self.assertIsInstance(lookup['national_format_number'], str)
-            self.assertIsInstance(lookup['country_code'], str)
-            self.assertIsInstance(lookup['country_name'], str)
-            self.assertIsInstance(lookup['country_prefix'], str)
-            self.assertIsInstance(lookup['current_carrier'], dict)
-            self.assertIsInstance(lookup['original_carrier'], dict)
-            self.assertIsInstance(lookup['valid_number'], str)
-            self.assertIsInstance(lookup['reachable'], str)
-            self.assertIsInstance(lookup['ported'], str)
-            self.assertIsInstance(lookup['roaming'], str)
-            self.assertIsNone(lookup['gsm_code'])
-            self.assertIsNone(lookup['gsm_message'])
-            self.assertTrue(is_valid_carrier(lookup['current_carrier']))
-            self.assertTrue(is_valid_carrier(lookup['original_carrier']))
+        for hlr in self.resource.hlr('+491716992343'):
+            self.assertIsInstance(hlr.status, bool)
+            self.assertIsInstance(hlr.status_message, str)
+            self.assertIsInstance(hlr.lookup_outcome, bool)
+            self.assertIsInstance(hlr.lookup_outcome_message, str)
+            self.assertIsInstance(hlr.international_format_number, str)
+            self.assertIsInstance(hlr.international_formatted, str)
+            self.assertIsInstance(hlr.national_format_number, str)
+            self.assertIsInstance(hlr.country_code, str)
+            self.assertIsInstance(hlr.country_name, str)
+            self.assertIsInstance(hlr.country_prefix, str)
+            self.assertIsInstance(hlr.valid_number, str)
+            self.assertIsInstance(hlr.reachable, str)
+            self.assertIsInstance(hlr.ported, str)
+            self.assertIsInstance(hlr.roaming, str)
+            self.assertIsNone(hlr.gsm_code)
+            self.assertIsNone(hlr.gsm_message)
+            self.assertTrue(is_valid_carrier(hlr.current_carrier))
+            self.assertTrue(is_valid_carrier(hlr.original_carrier))
 
     def test_lookup_mnp(self) -> None:
-        for lookup in self.resource.mnp('+491716992343'):
-            self.assertIsInstance(lookup, dict)
+        for mnp in self.resource.mnp('+491716992343'):
+            self.assertTrue(mnp.success)
+            self.assertEqual(mnp.code, 100)
+            self.assertGreaterEqual(mnp.price, 0.0)
 
-            self.assertTrue(lookup['success'])
-            self.assertEqual(lookup['code'], 100)
-            self.assertIsInstance(lookup['price'], float)
-            self.assertIsInstance(lookup['mnp'], dict)
-
-            self.assertIsInstance(lookup['mnp']['country'], str)
-            self.assertIsInstance(lookup['mnp']['number'], str)
-            self.assertIsInstance(lookup['mnp']['national_format'], str)
-            self.assertIsInstance(lookup['mnp']['international_formatted'], str)
-            self.assertIsInstance(lookup['mnp']['network'], str)
-            self.assertIsInstance(lookup['mnp']['mccmnc'], str)
-            self.assertIsInstance(lookup['mnp']['isPorted'], bool)
+            self.assertTrue(len(mnp.mnp.country) > 0)
+            self.assertTrue(len(mnp.mnp.number) > 0)
+            self.assertTrue(len(mnp.mnp.national_format) > 0)
+            self.assertTrue(len(mnp.mnp.international_formatted) > 0)
+            self.assertTrue(len(mnp.mnp.network) > 0)
+            self.assertTrue(len(mnp.mnp.mccmnc) > 0)
+            self.assertIsInstance(mnp.mnp.isPorted, bool)
 
     def test_lookup_rcs(self) -> None:
+        lookup: RcsCapabilities
         for lookup in self.resource.rcs('+491716992343'):
-            self.assertIsInstance(lookup['rcs_capabilities'], list)
+            self.assertIsInstance(lookup.rcs_capabilities, list)
             self.__assertFormat(lookup)
 
-    def __assertFormat(self, res: dict) -> None:
-        self.assertTrue(res['success'])
-        self.assertIsInstance(res['national'], str)
-        self.assertIsInstance(res['international'], str)
-        self.assertIsInstance(res['international_formatted'], str)
-        self.assertIsInstance(res['country_name'], str)
-        self.assertIsInstance(res['country_code'], str)
-        self.assertIsInstance(res['country_iso'], str)
-        self.assertIsInstance(res['carrier'], str)
-        self.assertIsInstance(res['network_type'], str)
+    def __assertFormat(self, res: PhoneNumberFormat) -> None:
+        self.assertTrue(res.success)
+        self.assertTrue(len(res.national) > 0)
+        self.assertTrue(len(res.international) > 0)
+        self.assertTrue(len(res.international_formatted) > 0)
+        self.assertTrue(len(res.country_name) > 0)
+        self.assertTrue(len(res.country_code) > 0)
+        self.assertTrue(len(res.country_iso) > 0)
+        self.assertTrue(len(res.carrier) > 0)
+        self.assertTrue(len(res.network_type) > 0)
