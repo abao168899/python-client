@@ -1,4 +1,4 @@
-from seven_api.resources.PricingResource import PricingResource
+from seven_api.resources.PricingResource import PricingResource, PricingResponse, CountryNetwork, CountryPricing
 from tests.BaseTest import BaseTest
 
 
@@ -11,7 +11,7 @@ class TestPricing(BaseTest):
         res = self.resource.get()
         self.__assert_response(res)
 
-        for country in res['countries']:
+        for country in res.countries:
             self.__assert_country(country)
 
     def test_pricing_get__country_code(self) -> None:
@@ -19,38 +19,37 @@ class TestPricing(BaseTest):
         res = self.resource.get(country_code)
         self.__assert_response(res)
 
-        self.assertEqual(len(res['countries']), 1)
-        for country in res['countries']:
-            self.__assert_country(country)
-            self.assertEqual(country['countryCode'], country_code)
+        self.assertEqual(len(res.countries), 1)
+        country = res.countries[0]
+        self.__assert_country(country)
+        self.assertEqual(country.countryCode, country_code)
 
-    def __assert_country(self, country: dict):
-        self.assertIsInstance(country['countryCode'], str)
-        self.assertIsInstance(country['countryName'], str)
-        self.assertIsInstance(country['countryPrefix'], str)
-        self.assertIsInstance(country['networks'], list)
-
-        for network in country['networks']:
+    def __assert_country(self, country: CountryPricing):
+        for network in country.networks:
             self.__assert_network(network)
 
-    def __assert_network(self, network: dict):
-        self.assertIsInstance(network['mcc'], str)
+    def __assert_network(self, network: CountryNetwork):
+        self.assertIsInstance(network.mcc, str)
 
-        mncs = network['mncs']
-        self.assertTrue(mncs is None or type(mncs) is list)
-        if mncs is not None:
-            mnc = BaseTest.first_list_item_fallback(mncs)
-            if mnc:
-                self.assertIsInstance(mnc, str)
+        if network.mncs is not None:
+            for mnc in network.mncs:
+                self.assertTrue(len(mnc) > 0)
 
-        network_name = network['networkName']
-        self.assertTrue(network_name is None or type(network_name) is str)
-        self.assertIsInstance(network['price'], float)
-        self.assertIsInstance(network['features'], list)
-        comment = network['comment']
-        self.assertTrue(comment is None or type(comment) is str)
+        if network.networkName is not None:
+            self.assertTrue(len(network.networkName) > 0)
+        self.assertGreaterEqual(network.price, 0.0)
 
-    def __assert_response(self, res: dict):
-        self.assertIsInstance(res['countCountries'], int)
-        self.assertIsInstance(res['countNetworks'], int)
-        self.assertIsInstance(res['countries'], list)
+        for feature in network.features:
+            self.assertTrue(len(feature) > 0)
+
+        if network.comment is not None:
+            self.assertTrue(len(network.comment) > 0)
+
+    def __assert_response(self, res: PricingResponse):
+        self.assertEqual(res.countCountries, len(res.countries))
+
+        networks = 0
+        for country in res.countries:
+            networks += len(country.networks)
+
+        self.assertEqual(res.countNetworks, networks)
