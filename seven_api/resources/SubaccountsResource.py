@@ -1,9 +1,65 @@
+from dataclasses import dataclass
+from typing import Optional, List
+
+import marshmallow_dataclass
+
 from seven_api.classes.Endpoint import Endpoint
 from seven_api.resources.Resource import Resource
 
+@dataclass
+class AutoTopUp:
+    amount: Optional[float]
+    threshold: Optional[float]
+
+@dataclass
+class Contact:
+    email: str
+    name: str
+
+
+@dataclass
+class Subaccount:
+    auto_topup: AutoTopUp
+    balance: float
+    company: str
+    contact: Contact
+    id: int
+    total_usage: float
+    username: Optional[str]
+
+subaccount_schema = marshmallow_dataclass.class_schema(Subaccount)()
+
+@dataclass
+class SubaccountCreateResponse:
+    error: Optional[str]
+    subaccount: Optional[Subaccount]
+    success: bool
+
+create_schema = marshmallow_dataclass.class_schema(SubaccountCreateResponse)()
+
+@dataclass
+class SubaccountDeleteResponse:
+    error: Optional[str]
+    success: bool
+
+delete_schema = marshmallow_dataclass.class_schema(SubaccountDeleteResponse)()
+
+@dataclass
+class TransferCreditsResponse:
+    error: Optional[str]
+    success: bool
+
+transfer_schema = marshmallow_dataclass.class_schema(TransferCreditsResponse)()
+
+@dataclass
+class AutoChargeResponse:
+    error: Optional[str]
+    success: bool
+
+auto_charge_schema = marshmallow_dataclass.class_schema(AutoChargeResponse)()
 
 class SubaccountsResource(Resource):
-    def auto_charge(self, subaccount_id: int, amount: float, threshold: float) -> dict:
+    def auto_charge(self, subaccount_id: int, amount: float, threshold: float) -> AutoChargeResponse:
         payload = {
             'action': 'update',
             'amount': amount,
@@ -11,37 +67,37 @@ class SubaccountsResource(Resource):
             'threshold': threshold
         }
         with self._api.client() as client:
-            return client.post(Endpoint.SUBACCOUNTS.value, data=payload).json()
+            return auto_charge_schema.loads(client.post(Endpoint.SUBACCOUNTS.value, data=payload).text)
 
-    def create(self, email: str, name: str) -> dict:
+    def create(self, email: str, name: str) -> SubaccountCreateResponse:
         payload = {
             'action': 'create',
             'email': email,
             'name': name,
         }
         with self._api.client() as client:
-            return client.post(Endpoint.SUBACCOUNTS.value, data=payload).json()
+            return create_schema.loads(client.post(Endpoint.SUBACCOUNTS.value, data=payload).text)
 
-    def delete(self, subaccount_id: int) -> dict:
+    def delete(self, subaccount_id: int) -> SubaccountDeleteResponse:
         payload = {
             'action': 'delete',
             'id': subaccount_id,
         }
         with self._api.client() as client:
-            return client.post(Endpoint.SUBACCOUNTS.value, data=payload).json()
+            return delete_schema.loads(client.post(Endpoint.SUBACCOUNTS.value, data=payload).text)
 
-    def list(self, subaccount_id: int = None) -> list:
+    def list(self, subaccount_id: int = None) -> List[Subaccount]:
         params = {'action': 'read'}
         if subaccount_id is not None:
             params.update({'id': subaccount_id})
         with self._api.client() as client:
-            return client.get(Endpoint.SUBACCOUNTS.value, params=params).json()
+            return subaccount_schema.loads(client.get(Endpoint.SUBACCOUNTS.value, params=params).text, many=True)
 
-    def transfer_credits(self, subaccount_id: int, amount: float) -> dict:
+    def transfer_credits(self, subaccount_id: int, amount: float) -> TransferCreditsResponse:
         payload = {
             'action': 'transfer_credits',
             'amount': amount,
             'id': subaccount_id,
         }
         with self._api.client() as client:
-            return client.post(Endpoint.SUBACCOUNTS.value, data=payload).json()
+            return transfer_schema.loads(client.post(Endpoint.SUBACCOUNTS.value, data=payload).text)
