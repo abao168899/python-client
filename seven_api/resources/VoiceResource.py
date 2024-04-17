@@ -13,7 +13,7 @@ class VoiceResource(Resource):
             to = ','.join(to)
         params['to'] = to
 
-        with self._client.client() as client:
+        with self.__api.client() as client:
             return client.post(Endpoint.VOICE.value, data=params).json()
 
     def validate_phone_number(self, number: str, callback: str = None) -> dict:
@@ -21,5 +21,5 @@ class VoiceResource(Resource):
             'callback': callback,
             'number': number,
         }
-        with self._client.client() as client:
+        with self.__api.client() as client:
             return client.post(Endpoint.VALIDATE_FOR_VOICE.value, data=payload).json()

@@ -2,7 +2,7 @@ from seven_api.SevenApi import SevenApi
 
 
 class Resource:
-    _client: SevenApi
+    __api: SevenApi
 
     def __init__(self, client: SevenApi):
-        self._client = client
+        self.__api = client

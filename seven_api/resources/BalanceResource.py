@@ -4,5 +4,5 @@ from seven_api.resources.Resource import Resource
 
 class BalanceResource(Resource):
     def retrieve(self) -> dict:
-        with self._client.client as client:
+        with self.__api.client as client:
             return client.get(Endpoint.BALANCE.value).json()
