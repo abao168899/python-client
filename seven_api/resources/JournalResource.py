@@ -1,6 +1,61 @@
+from dataclasses import field, dataclass
+from typing import Optional, List
+
+import marshmallow_dataclass
+from marshmallow import Schema
+
 from seven_api.classes.Endpoint import Endpoint
 from seven_api.classes.ToQueryString import ToQueryString
 from seven_api.resources.Resource import Resource
+
+
+@dataclass
+class JournalBase:
+    from_: str = field(metadata={"data_key": "from"})
+    id: str
+    price: str
+    text: str
+    timestamp: str
+    to: str
+
+
+base_schema = marshmallow_dataclass.class_schema(JournalBase)()
+
+
+@dataclass
+class JournalOutbound(JournalBase):
+    channel: str
+    connection: str
+    dlr: Optional[str]
+    dlr_timestamp: Optional[str]
+    foreign_id: Optional[str]
+    label: Optional[str]
+    latency: Optional[str]
+    mccmnc: Optional[str]
+    type: str
+
+
+outbound_schema = marshmallow_dataclass.class_schema(JournalOutbound)()
+
+
+@dataclass
+class JournalVoice(JournalBase):
+    duration: Optional[str]
+    error: Optional[str]
+    price: Optional[str]
+    status: str
+    xml: bool
+
+
+voice_schema = marshmallow_dataclass.class_schema(JournalVoice)()
+
+
+@dataclass
+class JournalReply(JournalBase):
+    price: float
+
+
+reply_schema = marshmallow_dataclass.class_schema(JournalReply)()
 
 
 class JournalParams(ToQueryString):
@@ -23,21 +78,21 @@ class JournalParams(ToQueryString):
 
 
 class JournalResource(Resource):
-    def outbound(self, params: JournalParams = None) -> list:
-        return self.__get('outbound', params)
+    def outbound(self, params: JournalParams = None) -> List[JournalOutbound]:
+        return self.__get(Endpoint.JOURNAL_OUTBOUND, outbound_schema, params)
 
-    def inbound(self, params: JournalParams = None) -> list:
-        return self.__get('inbound', params)
+    def inbound(self, params: JournalParams = None) -> List[JournalBase]:
+        return self.__get(Endpoint.JOURNAL_INBOUND, base_schema, params)
 
-    def voice(self, params: JournalParams = None) -> list:
-        return self.__get('voice', params)
+    def voice(self, params: JournalParams = None) -> List[JournalVoice]:
+        return self.__get(Endpoint.JOURNAL_VOICE, voice_schema, params)
 
-    def replies(self, params: JournalParams = None) -> list:
-        return self.__get('replies', params)
+    def replies(self, params: JournalParams = None) -> List[JournalReply]:
+        return self.__get(Endpoint.JOURNAL_REPLIES, reply_schema, params)
 
-    def __get(self, journal_type: str, params: JournalParams = None) -> list:
+    def __get(self, endpoint: Endpoint, schema: Schema, params: JournalParams = None) -> list:
         if params is None:
             params = JournalParams()
 
         with self._api.client() as client:
-            return client.get(f'{Endpoint.JOURNAL.value}/{journal_type}', params=params.as_dict()).json()
+            return schema.loads(client.get(endpoint.value, params=params.as_dict()).text, many=True)
