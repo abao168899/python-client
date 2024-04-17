@@ -20,8 +20,8 @@ classifiers = [
     'Programming Language :: Python :: 3 :: Only',
 ]
 dependencies = [
-    'requests',
     'importlib-metadata; python_version<"3.8"',
+    'httpx[http2]'
 ]
 dynamic = ['version']
 packages = [{ include = "seven_api" }]

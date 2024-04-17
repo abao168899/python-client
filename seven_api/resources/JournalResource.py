@@ -38,4 +38,6 @@ class JournalResource(Resource):
     def __get(self, journal_type: str, params: JournalParams = None) -> list:
         if params is None:
             params = JournalParams()
-        return self._client.get(f'{Endpoint.JOURNAL.value}/{journal_type}', params.as_dict())
+
+        with self._client.client() as client:
+            return client.get(f'{Endpoint.JOURNAL.value}/{journal_type}', params=params.as_dict()).json()

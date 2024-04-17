@@ -4,35 +4,44 @@ from seven_api.resources.Resource import Resource
 
 class SubaccountsResource(Resource):
     def auto_charge(self, subaccount_id: int, amount: float, threshold: float) -> dict:
-        return self._client.post(Endpoint.SUBACCOUNTS, {
+        payload = {
             'action': 'update',
             'amount': amount,
             'id': subaccount_id,
             'threshold': threshold
-        })
+        }
+        with self._client.client() as client:
+            return client.post(Endpoint.SUBACCOUNTS.value, data=payload).json()
 
     def create(self, email: str, name: str) -> dict:
-        return self._client.post(Endpoint.SUBACCOUNTS, {
+        payload = {
             'action': 'create',
             'email': email,
             'name': name,
-        })
+        }
+        with self._client.client() as client:
+            return client.post(Endpoint.SUBACCOUNTS.value, data=payload).json()
 
     def delete(self, subaccount_id: int) -> dict:
-        return self._client.post(Endpoint.SUBACCOUNTS, {
+        payload = {
             'action': 'delete',
             'id': subaccount_id,
-        })
+        }
+        with self._client.client() as client:
+            return client.post(Endpoint.SUBACCOUNTS.value, data=payload).json()
 
     def list(self, subaccount_id: int = None) -> list:
         params = {'action': 'read'}
         if subaccount_id is not None:
             params.update({'id': subaccount_id})
-        return self._client.get(Endpoint.SUBACCOUNTS, params)
+        with self._client.client() as client:
+            return client.get(Endpoint.SUBACCOUNTS.value, params=params).json()
 
     def transfer_credits(self, subaccount_id: int, amount: float) -> dict:
-        return self._client.post(Endpoint.SUBACCOUNTS, {
+        payload = {
             'action': 'transfer_credits',
             'amount': amount,
             'id': subaccount_id,
-        })
+        }
+        with self._client.client() as client:
+            return client.post(Endpoint.SUBACCOUNTS.value, data=payload).json()

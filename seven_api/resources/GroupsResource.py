@@ -14,19 +14,24 @@ class GroupsListParams(ToQueryString):
 
 class GroupsResource(Resource):
     def create(self, name: str) -> dict:
-        return self._client.post(Endpoint.GROUPS, {'name': name})
+        with self._client.client() as client:
+            return client.post(Endpoint.GROUPS.value, data={'name': name}).json()
 
     def delete(self, group_id: int, delete_contacts: bool = False) -> dict:
         path = f'{Endpoint.GROUPS.value}/{group_id}'
         if delete_contacts:
             path += f'?delete_contacts={str(delete_contacts).lower()}'
-        return self._client.delete(path)
+        with self._client.client() as client:
+            return client.delete(path).json()
 
     def get(self, group_id: int) -> dict:
-        return self._client.get(f'{Endpoint.GROUPS.value}/{group_id}')
+        with self._client.client() as client:
+            return client.get(f'{Endpoint.GROUPS.value}/{group_id}').json()
 
     def list(self, params: GroupsListParams) -> dict:
-        return self._client.get(Endpoint.GROUPS, params.as_dict())
+        with self._client.client() as client:
+            return client.get(Endpoint.GROUPS.value, params=params.as_dict()).json()
 
     def update(self, group_id: int, name: str) -> dict:
-        return self._client.patch(f'{Endpoint.GROUPS.value}/{group_id}', {'name': name})
+        with self._client.client() as client:
+            return client.patch(f'{Endpoint.GROUPS.value}/{group_id}', data={'name': name}).json()

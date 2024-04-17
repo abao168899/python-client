@@ -8,7 +8,9 @@ class SmsResource(Resource):
         if isinstance(ids, str):
             ids = [ids]
         ids = ','.join(ids)
-        return self._client.delete(f'{Endpoint.SMS.value}?ids[]={ids}')
+
+        with self._client.client() as client:
+            return client.delete(Endpoint.SMS.value, params={'ids[]': ids}).json()
 
     def dispatch(self, to: list | str, text: str, params: dict = None) -> dict:
         if params is None:
@@ -17,13 +19,17 @@ class SmsResource(Resource):
         if isinstance(to, list):
             to = ','.join(to)
         params['to'] = to
-        return self._client.post(Endpoint.SMS, params)
+
+        with self._client.client() as client:
+            return client.post(Endpoint.SMS.value, data=params).json()
 
     def status(self, ids: list | str) -> list:
         if isinstance(ids, str):
             ids = [ids]
         ids = ','.join(ids)
-        return self._client.get(f'{Endpoint.STATUS.value}?msg_id={ids}')
+
+        with self._client.client() as client:
+            return client.get(Endpoint.STATUS.value, params={'msg_id': ids}).json()
 
 
 class StatusMessage(ExtendedEnum):

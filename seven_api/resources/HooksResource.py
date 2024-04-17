@@ -5,13 +5,16 @@ from seven_api.resources.Resource import Resource
 
 class HooksResource(Resource):
     def read(self) -> dict:
-        return self._client.get(Endpoint.HOOKS)
+        with self._client.client() as client:
+            return client.get(Endpoint.HOOKS.value).json()
 
     def subscribe(self, params: dict) -> dict:
-        return self._client.post(Endpoint.HOOKS, params)
+        with self._client.client() as client:
+            return client.post(Endpoint.HOOKS.value, data=params).json()
 
     def unsubscribe(self, hook_id: int) -> dict:
-        return self._client.delete(f'{Endpoint.HOOKS.value}?id={hook_id}')
+        with self._client.client() as client:
+            return client.delete(f'{Endpoint.HOOKS.value}?id={hook_id}').json()
 
 
 class HookEventType(ExtendedEnum):

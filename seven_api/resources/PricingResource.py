@@ -7,4 +7,5 @@ class PricingResource(Resource):
         path = f'{Endpoint.PRICING.value}'
         if len(country_code) > 0:
             path = f'{path}?country={country_code}'
-        return self._client.get(path)
+        with self._client.client() as client:
+            return client.get(path).json()

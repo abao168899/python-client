@@ -15,17 +15,21 @@ class RcsTarget(str, Enum):
 
 class RcsResource(Resource):
     def delete(self, msg_id: int) -> dict:
-        return self._client.delete(f'{Endpoint.RCS_MESSAGES.value}/{msg_id}')
+        with self._client.client() as client:
+            return client.delete(f'{Endpoint.RCS_MESSAGES.value}/{msg_id}').json()
 
     def dispatch(self, to: str, text: str, params=None) -> dict:
         if params is None:
             params = {}
         params['to'] = to
         params['text'] = text
-        return self._client.post(Endpoint.RCS_MESSAGES, params)
+
+        with self._client.client() as client:
+            return client.post(Endpoint.RCS_MESSAGES.value, data=params).json()
 
     def event(self, target: RcsTarget, event: RcsEvent, value, agent='') -> dict:
         key = target.value
-
         params = {'event': event.name, key: value, 'from': agent}
-        return self._client.post(Endpoint.RCS_EVENTS, params)
+
+        with self._client.client() as client:
+            return client.post(Endpoint.RCS_EVENTS.value, data=params).json()

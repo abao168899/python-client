@@ -20,7 +20,7 @@ setuptools.setup(
     ],
     description='A Python wrapper for the seven.io SMS gateway.',
     name='seven_api',
-    install_requires=['requests'],
+    install_requires=['httpx[http2]'],
     keywords='sms, text2voice, hlr, cnam, mnp',
     long_description=long_description,
     long_description_content_type='text/markdown',

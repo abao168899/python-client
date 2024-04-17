@@ -34,4 +34,5 @@ class AnalyticsResource(Resource):
             params = AnalyticsParams()
         payload = params.as_dict()
         payload['group_by'] = group_by
-        return self._client.get(Endpoint.ANALYTICS, payload)
+        with self._client.client() as client:
+            return client.get(Endpoint.ANALYTICS.value, params=payload).json()
