@@ -3,14 +3,6 @@ from enum import Enum
 import requests
 
 from seven_api.classes.Endpoint import Endpoint
-from seven_api.classes.ExtendedEnum import ExtendedEnum
-
-
-class Method(ExtendedEnum):
-    DELETE = 0
-    GET = 1
-    PATCH = 2
-    POST = 3
 
 
 class OrderDirection(str, Enum):
@@ -36,25 +28,28 @@ class SevenApi:
         self.req = requests.Session()
         self.req.headers = self.headers
 
-    def delete(self, endpoint: Endpoint | str, params=None):
-        return self.__request(Method.DELETE, endpoint, params)
+    def delete(self, endpoint: Endpoint | str, params: dict = None):
+        return self.__request('DELETE', endpoint, params)
 
-    def get(self, endpoint: Endpoint | str, params=None):
+    def get(self, endpoint: Endpoint | str, params: dict = None):
         self.req.params = params
-        return self.__request(Method.GET, endpoint)
+        return self.__request('GET', endpoint, None, params)
 
-    def patch(self, endpoint: Endpoint | str, params=None):
-        return self.__request(Method.PATCH, endpoint, params)
+    def patch(self, endpoint: Endpoint | str, params: dict = None):
+        return self.__request('PATCH', endpoint, params)
 
-    def post(self, endpoint: Endpoint | str, params=None):
-        return self.__request(Method.POST, endpoint, params)
+    def post(self, endpoint: Endpoint | str, params: dict = None):
+        return self.__request('POST', endpoint, params)
 
-    def __request(self, method: Method, endpoint: Endpoint | str, params=None):
+    def __request(self, method: str, endpoint: Endpoint | str, params: dict = None, qs: dict = None):
         if not isinstance(endpoint, str):
             endpoint = endpoint.value
 
         if params is None:
             params = {}
+
+        if qs is None:
+            qs = {}
 
         for key in list(params):
             if isinstance(params[key], bool):
@@ -66,7 +61,10 @@ class SevenApi:
         self.kwargs['data'] = params
 
         url = '{}/{}'.format(self.baseUrl, endpoint)
-        res = self.req.request(method.name, url, **self.kwargs)
+        # res = self.req.request(method, url, **self.kwargs)
+        self.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
+        print('{} {} with data {} and headers {} and params {}'.format(method, url, params, self.headers, qs))
+        res = requests.request(method, url, data=params, headers=self.headers, params=qs)
 
         try:
             json = res.json()
