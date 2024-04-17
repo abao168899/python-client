@@ -1,20 +1,62 @@
+from dataclasses import dataclass
+from typing import Optional, List
+
+import marshmallow_dataclass
+from marshmallow import EXCLUDE
+
 from seven_api.classes.Endpoint import Endpoint
 from seven_api.classes.ExtendedEnum import ExtendedEnum
 from seven_api.resources.Resource import Resource
 
+@dataclass
+class Hook:
+    created: str
+    enabled: bool
+    event_filter: Optional[str]
+    event_type: str
+    id: str
+    request_method: str
+    target_url: str
+
+@dataclass
+class HooksReadResponse:
+    hooks: List[Hook]
+    success: bool
+
+
+read_schema = marshmallow_dataclass.class_schema(HooksReadResponse)()
+
+@dataclass
+class HooksSubscribeResponse:
+    error_message: Optional[str]
+    id: Optional[int]
+    success: bool
+
+
+subscribe_schema = marshmallow_dataclass.class_schema(HooksSubscribeResponse)()
+
+@dataclass
+class HooksUnsubscribeResponse:
+    error_message: Optional[str]
+    id: Optional[int]
+    success: bool
+
+
+unsubscribe_schema = marshmallow_dataclass.class_schema(HooksUnsubscribeResponse)()
 
 class HooksResource(Resource):
-    def read(self) -> dict:
+    def read(self) -> HooksReadResponse:
         with self._api.client() as client:
-            return client.get(Endpoint.HOOKS.value).json()
+            return read_schema.loads(client.get(Endpoint.HOOKS.value).text, unknown=EXCLUDE)
 
-    def subscribe(self, params: dict) -> dict:
+    def subscribe(self, params: dict) -> HooksSubscribeResponse:
         with self._api.client() as client:
-            return client.post(Endpoint.HOOKS.value, data=params).json()
+            return subscribe_schema.loads(client.post(Endpoint.HOOKS.value, data=params).text, unknown=EXCLUDE)
 
-    def unsubscribe(self, hook_id: int) -> dict:
+    def unsubscribe(self, hook_id: int) -> HooksUnsubscribeResponse:
+        params = {'id': hook_id}
         with self._api.client() as client:
-            return client.delete(f'{Endpoint.HOOKS.value}?id={hook_id}').json()
+            return unsubscribe_schema.loads(client.delete(Endpoint.HOOKS.value, params=params).text, unknown=EXCLUDE)
 
 
 class HookEventType(ExtendedEnum):
