@@ -7,8 +7,8 @@ REM Command file for Sphinx documentation
 if "%SPHINXBUILD%" == "" (
 	set SPHINXBUILD=sphinx-build
 )
-set SOURCEDIR=seven_api
-set BUILDDIR=build
+set SOURCEDIR=.
+set BUILDDIR=dist
 
 if "%1" == "" goto help
 
@@ -24,6 +24,8 @@ if errorlevel 9009 (
 	echo.https://www.sphinx-doc.org/
 	exit /b 1
 )
+
+if "%1" == "" goto help
 
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
 goto end

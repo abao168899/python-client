@@ -4,3 +4,4 @@ __pycache__/
 build/
 dist/
 sms77api.egg-info/
+src/
