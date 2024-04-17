@@ -16,19 +16,23 @@ pip3 install seven_api
 
 ```python
 from seven_api.SevenApi import SevenApi
+from seven_api.resources.BalanceResource import BalanceResource
 
 client = SevenApi("InsertYourSuperSecretApiKeyFromSeven")
-print(client.balance())
+balance = BalanceResource(client)
+print(balance.retrieve())
 ```
 
 #### Send an SMS and return a detailed JSON response
 
 ```python
 from seven_api.SevenApi import SevenApi
+from seven_api.resources.SmsResource import SmsResource
 import os
 
 client = SevenApi(os.environ.get('SEVEN_API_KEY', 'FallbackValueIfMissing'))
-print(client.sms('+49179999999999', 'Hi friend!', {'json': True}))
+resource = SmsResource(client)
+print(resource.dispatch('+49179999999999', 'Hi friend!', {'flash': True}))
 ```
 
 #### Support
