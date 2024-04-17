@@ -7,22 +7,22 @@ from seven_api.classes.Endpoint import Endpoint
 from seven_api.resources.Resource import Resource
 
 @dataclass
-class AutoTopUp:
+class SubaccountAutoTopUp:
     amount: Optional[float]
     threshold: Optional[float]
 
 @dataclass
-class Contact:
+class SubaccountContact:
     email: str
     name: str
 
 
 @dataclass
 class Subaccount:
-    auto_topup: AutoTopUp
+    auto_topup: SubaccountAutoTopUp
     balance: float
     company: str
-    contact: Contact
+    contact: SubaccountContact
     id: int
     total_usage: float
     username: Optional[str]

@@ -1,4 +1,4 @@
-from seven_api.resources.ContactsResource import ContactsResource, ContactsListParams
+from seven_api.resources.ContactsResource import ContactsResource, ContactsListParams, Contact
 from tests.BaseTest import BaseTest
 
 
@@ -9,33 +9,30 @@ class TestContacts(BaseTest):
 
     def test_contacts_delete(self) -> None:
         res_create = self.resource.create({})
-        contact_id = res_create['id']
+        contact_id = res_create.id
 
         try:
             self.resource.delete(contact_id)
         except ValueError:
             self.fail("delete() raised ValueError unexpectedly!")
 
-    def __assert_contact(self, contact: dict) -> None:
-        self.assertIsNotNone(contact['id'])
+    def __assert_contact(self, contact: Contact) -> None:
+        self.assertTrue(contact.id > 0)
 
-    def test_contacts_list(self) -> None:
+    def test_contacts_list(self) -> None: # TODO: fix test
         res_create = self.resource.create({})
 
-        params = ContactsListParams()
-        params.limit = 500
+        params = ContactsListParams(limit=500)
         res = self.resource.list(params)
-        paging_metadata = res['pagingMetadata']
-        self.assertIn('count', paging_metadata)
-        self.assertIn('has_more', paging_metadata)
-        self.assertEqual(params.limit, paging_metadata['limit'])
-        self.assertIn('offset', paging_metadata)
-        self.assertIn('total', paging_metadata)
+        self.assertTrue(res.pagingMetadata.count >= 0)
+        self.assertEqual(params.limit, res.pagingMetadata.limit)
+        self.assertTrue(res.pagingMetadata.offset >= 0)
+        self.assertTrue(res.pagingMetadata.total >= 0)
 
-        for contact in res['data']:
+        for contact in res.data:
             self.__assert_contact(contact)
 
-        self.resource.delete(res_create['id'])
+        self.resource.delete(res_create.id)
 
     def test_contacts_create(self) -> None:
         avatar = 'https://avatars.githubusercontent.com/u/25985637'
@@ -47,19 +44,19 @@ class TestContacts(BaseTest):
         }
         res = self.resource.create(params, avatar)
 
-        self.assertEqual(avatar, res['avatar'])
-        self.assertEqual(params['email'], res['properties']['email'])
-        self.assertEqual(params['firstname'], res['properties']['firstname'])
-        self.assertEqual(params['lastname'], res['properties']['lastname'])
-        self.assertEqual(params['mobile_number'], res['properties']['mobile_number'])
+        self.assertEqual(avatar, res.avatar)
+        self.assertEqual(params['email'], res.properties.email)
+        self.assertEqual(params['firstname'], res.properties.firstname)
+        self.assertEqual(params['lastname'], res.properties.lastname)
+        self.assertEqual(params['mobile_number'], res.properties.mobile_number)
 
-        self.resource.delete(res['id'])
+        self.resource.delete(res.id)
 
     def test_contacts_get(self) -> None:
         create_res = self.resource.create({})
 
-        contact = self.resource.get(create_res['id'])
-        self.assertEqual(contact['id'], str(create_res['id']))
+        contact = self.resource.get(create_res.id)
+        self.assertEqual(contact.id, create_res.id)
         self.__assert_contact(contact)
 
-        self.resource.delete(create_res['id'])
+        self.resource.delete(create_res.id)

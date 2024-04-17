@@ -5,15 +5,8 @@ import marshmallow_dataclass
 
 from seven_api.classes.Endpoint import Endpoint
 from seven_api.classes.ToQueryString import ToQueryString
-from seven_api.resources.Resource import Resource
+from seven_api.resources.Resource import Resource, PagingMetadata
 
-@dataclass
-class PagingMetadata:
-    count: int
-    has_more: bool
-    limit: int
-    offset: int
-    total: int
 
 @dataclass
 class Group:
