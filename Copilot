@@ -1,0 +1,26 @@
+import requests
+
+# Replace with your actual API key
+API_KEY = "your_api_key_here"
+BASE_URL = "https://gateway.seven.io/api/sms"
+
+def send_bulk_sms(numbers, message):
+    payload = {
+        'text': message,
+        'to': ",".join(numbers),
+        'from': 'your_sender_id'
+    }
+    headers = {
+        'Authorization': f'Bearer {API_KEY}'
+    }
+    response = requests.post(BASE_URL, data=payload, headers=headers)
+    
+    if response.status_code == 200:
+        print("SMS sent successfully")
+    else:
+        print(f"Failed to send SMS: {response.text}")
+
+if __name__ == "__main__":
+    numbers = ["1234567890", "0987654321"]  # Add your phone numbers here
+    message = "Hello, this is a test message."
+    send_bulk_sms(numbers, message)
