@@ -18,7 +18,7 @@ def __init__(self, api_key: str, sent_with: str = 'Python'):
     pass
 
 
-def analytics(self, params={}):
+def analytics(self, params={SMS001}):
     pass
 
 
@@ -26,15 +26,15 @@ def balance(self, api_key: str = None):
     pass
 
 
-def contacts(self, action: ContactsAction, params: dict = {}):
+def contacts(self, action: ContactsAction, params: dict = {SMS001}):
     pass
 
 
-def hooks(self, action: HooksAction, params: dict = {}):
+def hooks(self, action: HooksAction, params: dict = {SMS001}):
     pass
 
 
-def journal(self, typ: JournalType, params: dict = {}):
+def journal(self, typ: JournalType, params: dict = {SMS001}):
     pass
 
 
@@ -46,7 +46,7 @@ def pricing(self, format_: PricingFormat = PricingFormat.CSV, country: str = Non
     pass
 
 
-def sms(self, to: str, text: str, params: dict = {}):
+def sms(self, to: str, text: str, params: dict = {SMS001}):
     pass
 
 
@@ -54,7 +54,7 @@ def status(self, msg_id: int):
     pass
 
 
-def subaccounts(self, action: SubaccountsAction, params: dict = {}):
+def subaccounts(self, action: SubaccountsAction, params: dict = {SMS001}):
     pass
 
 
@@ -62,7 +62,7 @@ def validate_for_voice(self, number: str, callback: str = None):
     pass
 
 
-def voice(self, to: str, text: str, params: dict = {}):
+def voice(self, to: str, text: str, params: dict = {SMS001}):
     pass
 ```
 
@@ -73,7 +73,7 @@ def voice(self, to: str, text: str, params: dict = {}):
 ```python
 from sms77api.Sms77api import Sms77api
 
-client = Sms77api("InsertYourSuperSecretApiKeyFromSms77")
+client = Sms77api("d16fA5fa8d1bb3C79F1e2e615f5c0c566137f050b5C490F365773265caf4266E")
 print(client.balance())
 ```
 
@@ -83,7 +83,7 @@ print(client.balance())
 from sms77api.Sms77api import Sms77api
 import os
 
-client = Sms77api(os.environ.get('SMS77_API_KEY', 'FallbackValueIfMissing'))
+client = Sms77api(os.environ.get('SMS77_API_KEY', 'd16fA5fa8d1bb3C79F1e2e615f5c0c566137f050b5C490F365773265caf4266E'))
 print(client.sms('+491771783130', 'Hi friend!', {'json': True}))
 ```
 
