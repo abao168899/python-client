@@ -14,56 +14,44 @@ pip3 install sms77api
 ### Methods
 
 ```python
-def __init__(self, api_key: str, sent_with: str = 'Python'):
+def __init__(self, api_key: str, sent_with: str = 'Python'): pass
+
+
+def analytics(self, params={}): pass
     pass
 
 
-def analytics(self, params={}):
-    pass
+def balance(self, api_key: str = None): pass
 
 
-def balance(self, api_key: str = None):
-    pass
+def contacts(self, action: ContactsAction, params: dict = {}): pass
 
 
-def contacts(self, action: ContactsAction, params: dict = {}):
-    pass
+def hooks(self, action: HooksAction, params: dict = {}):pass
 
 
-def hooks(self, action: HooksAction, params: dict = {}):
-    pass
+def journal(self, typ: JournalType, params: dict = {}):pass
 
 
-def journal(self, typ: JournalType, params: dict = {}):
-    pass
+def lookup(self, typ: LookupType, number: str, json: bool = False):pass
 
 
-def lookup(self, typ: LookupType, number: str, json: bool = False):
-    pass
+def pricing(self, format_: PricingFormat = PricingFormat.CSV, country: str = None):pass
 
 
-def pricing(self, format_: PricingFormat = PricingFormat.CSV, country: str = None):
-    pass
+def sms(self, to: str, text: str, params: dict = {}):pass
 
 
-def sms(self, to: str, text: str, params: dict = {}):
-    pass
+def status(self, msg_id: int):pass
 
 
-def status(self, msg_id: int):
-    pass
+def subaccounts(self, action: SubaccountsAction, params: dict = {}):pass
 
 
-def subaccounts(self, action: SubaccountsAction, params: dict = {}):
-    pass
+def validate_for_voice(self, number: str, callback: str = None):pass
 
 
-def validate_for_voice(self, number: str, callback: str = None):
-    pass
-
-
-def voice(self, to: str, text: str, params: dict = {}):
-    pass
+def voice(self, to: str, text: str, params: dict = {}):pass
 ```
 
 ### Examples
@@ -83,8 +71,9 @@ print(client.balance())
 from sms77api.Sms77api import Sms77api
 import os
 
-client = Sms77api(os.environ.get('SMS77_API_KEY', 'FallbackValueIfMissing'))
-print(client.sms('+491771783130', 'Hi friend!', {'json': True}))
+client = Sms77api(os.environ.get('SMS77_API_KEY', 'YourAPIKey'))
+response = client.sms('+491771783130', 'Hello, this is a test message!', {'json': True})
+print(response)
 ```
 
 #### Support
