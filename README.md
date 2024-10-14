@@ -83,8 +83,9 @@ print(client.balance())
 from sms77api.Sms77api import Sms77api
 import os
 
-client = Sms77api(os.environ.get('SMS77_API_KEY', 'FallbackValueIfMissing'))
-print(client.sms('+491771783130', 'Hi friend!', {'json': True}))
+client = Sms77api(os.environ.get('SMS77_API_KEY', 'YourAPIKey'))
+response = client.sms('+491771783130', 'Hello, this is a test message!', {'json': True})
+print(response)
 ```
 
 #### Support
