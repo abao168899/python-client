@@ -10,19 +10,17 @@ from sms77api.classes.Pricing import PricingFormat
 from sms77api.classes.Subaccounts import SubaccountsAction
 
 
-def expect_json(endpoint: str, params: dict) -> bool:
-    if endpoint in [Endpoint.BALANCE.value, Endpoint.VOICE.value]:
-        return False
-    if 'json' not in params:
-        return False
-    if params['json'] is not True and params['json'] != 1:
-        return False
-    return True
-
-
-def local_params(locals_: dict) -> dict:
-    del locals_['self']
-    return locals_
+# 在 src/sms77api/Sms77api.py 文件中添加 bulk_sms 方法
+def bulk_sms(self, messages: list, params: dict = {}):
+    results = []
+    for message in messages:
+        to, text = message.get('to'), message.get('text')
+        if to and text:
+            result = self.sms(to, text, params)
+            results.append(result)
+        else:
+            raise ValueError("Each message must have 'to' and 'text' fields.")
+    return results
 
 
 class Sms77api:
